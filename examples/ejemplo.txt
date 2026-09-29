@@ -1,0 +1,8 @@
+Audiobook Generator
+
+Capítulo 1
+Este es un documento de prueba.
+El programa separará los capítulos y generará audio.
+
+Capítulo 2
+Esta es la segunda parte del ejemplo.

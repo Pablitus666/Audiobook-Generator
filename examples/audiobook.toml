@@ -1,0 +1,21 @@
+[tts]
+voice = "Sofía"
+rate = "+0%"
+volume = "+0%"
+pitch = "+0Hz"
+
+[output]
+format = "mp3"
+bitrate = "192k"
+
+[processing]
+max_characters = 3000
+temp_dir = "temp"
+keep_chapters = true
+debug_ocr = false
+
+[ocr]
+mode = "auto"
+language = "spa"
+dpi = 300
+psm = 3

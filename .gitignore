@@ -1,0 +1,40 @@
+__pycache__/
+*.py[cod]
+
+.venv/
+venv/
+.env
+
+.vscode/
+.idea/
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+build/
+dist/
+*.egg-info/
+
+output/
+output_*/
+output-*/
+temp/
+logs/
+
+# Archivos de prueba locales
+/prueba*.txt
+/prueba*.pdf
+/prueba*.docx
+/prueba*.xyz
+/vacio.txt
+
+# Cobertura y herramientas de testing
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+
+# Logs locales
+*.log

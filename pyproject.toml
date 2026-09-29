@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "audiobook-generator"
+version = "1.0.0"
+description = "Modular text-to-audiobook generator"
+requires-python = ">=3.10"
+dependencies = [
+    "edge-tts>=7.2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.0",
+    "pytest-asyncio>=1.0",
+    "reportlab>=5.0",
+]
+
+docs = [
+    "pypdf>=6.0.0",
+    "python-docx>=1.2.0",
+]
+
+ocr = [
+    "pypdf>=6.0.0",
+    "pymupdf>=1.26.5",
+    "pytesseract>=0.3.13",
+    "Pillow>=11.0.0",
+]
+
+[project.scripts]
+audiobook-generator = "audiobook_generator.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.setuptools.packages.find]
+include = ["audiobook_generator*"]
+exclude = ["tests*", "docs*", "examples*", "output*"]

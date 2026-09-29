@@ -1,0 +1,5 @@
+-r requirements.txt
+pypdf>=6.0.0
+pymupdf>=1.26.5
+pytesseract>=0.3.13
+Pillow>=11.0.0
