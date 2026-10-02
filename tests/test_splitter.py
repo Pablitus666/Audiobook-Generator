@@ -15,7 +15,30 @@ def test_split_detects_chapters():
 
     assert len(chapters) == 2
     assert chapters[0].title == "Capítulo 1"
-    assert chapters[1].text == "Segundo."
+    assert chapters[0].text == "Capítulo 1\n\nPrimero."
+    assert chapters[1].text == "Capítulo 2\n\nSegundo."
+
+
+def test_split_preserves_preamble_and_chapter_headings():
+    text = (
+        "RESUMEN EL CAMINO DE SHERLOCK\n\n"
+        "ESTE AUDIO ES PARA QUE DAVID TÉLLEZ ESTUDIE\n\n"
+        "Capítulo 1\n"
+        "Resumen\n"
+        "Contenido del capítulo.\n\n"
+        "Capítulo 2\n"
+        "Segundo capítulo."
+    )
+
+    chapters = split_text(text)
+
+    assert len(chapters) == 2
+    assert chapters[0].text.startswith(
+        "RESUMEN EL CAMINO DE SHERLOCK\n\n"
+        "ESTE AUDIO ES PARA QUE DAVID TÉLLEZ ESTUDIE\n\n"
+        "Capítulo 1\n\n"
+    )
+    assert chapters[1].text.startswith("Capítulo 2\n\n")
 
 
 def test_split_detects_chapter_with_subtitle():

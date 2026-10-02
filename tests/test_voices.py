@@ -59,9 +59,7 @@ def test_unknown_voice_is_rejected():
         raise AssertionError("Se esperaba ValueError")
 
 
-def test_public_voice_names_are_case_insensitive_and_accent_insensitive():
+def test_public_voice_names_are_case_insensitive():
     assert get_voice_profile("ELVIRA").id == "Elvira"
     assert get_voice_profile("álvaro").id == "Álvaro"
-    assert get_voice_profile("ALVARO").id == "Álvaro"
-    assert get_voice_profile(" sofia ").id == "Sofía"
 

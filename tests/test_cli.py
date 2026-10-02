@@ -9,35 +9,6 @@ from audiobook_generator.cli import build_parser, main
 from audiobook_generator.core.errors import AudiobookError
 
 
-
-
-def test_cli_lists_voices_without_input(capsys):
-    parser = build_parser()
-    args = parser.parse_args(["--list-voices"])
-
-    assert args.list_voices is True
-    assert args.input is None
-
-
-def test_cli_list_voices_output(monkeypatch, capsys):
-    monkeypatch.setattr(
-        "sys.argv",
-        ["audiobook-generator", "--list-voices"],
-    )
-
-    main()
-    output = capsys.readouterr().out
-
-    assert "Voces disponibles:" in output
-    assert "Sofía" in output
-    assert "Elvira" in output
-    assert "Marcelo" in output
-    assert "Álvaro" in output
-    assert "es-BO-SofiaNeural" in output
-    assert "es-ES-ElviraNeural" in output
-    assert "Español (Bolivia)" in output
-    assert "Español (España)" in output
-
 def test_cli_parses_basic_arguments() -> None:
     parser = build_parser()
 
@@ -49,12 +20,12 @@ def test_cli_parses_basic_arguments() -> None:
     )
 
     assert args.input == "libro.txt"
-    assert args.output == "output"
+    assert args.output is None
     assert args.voice == "Sofía"
     assert args.rate == "+0%"
     assert args.volume == "+0%"
     assert args.pitch == "+0Hz"
-    assert args.max_characters == 3000
+    assert args.max_characters == 1500
     assert args.bitrate == "192k"
     assert args.keep_chapters is True
     assert args.ocr == "auto"

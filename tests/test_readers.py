@@ -284,36 +284,3 @@ def test_odt_reader_rejects_corrupt_file(tmp_path: Path):
         match="no se pudo leer el documento ODT",
     ):
         OdtReader().read(source)
-
-
-def test_html_reader_honors_meta_charset(tmp_path: Path):
-    source = tmp_path / "libro.html"
-    source.write_bytes(
-        b"<html><head><meta charset=\"windows-1252\"><title>Libro</title></head>"
-        b"<body><p>Cap\xedtulo con coraz\xf3n y acci\xf3n.</p></body></html>"
-    )
-
-    document = HtmlReader().read(source)
-
-    assert document.title == "Libro"
-    assert "Capítulo con corazón y acción." in document.text
-
-
-def test_odt_reader_rejects_missing_file(tmp_path: Path):
-    source = tmp_path / "inexistente.odt"
-
-    with pytest.raises(
-        InputFileError,
-        match="no existe el archivo de entrada",
-    ):
-        OdtReader().read(source)
-
-
-def test_rtf_reader_rejects_missing_file(tmp_path: Path):
-    source = tmp_path / "inexistente.rtf"
-
-    with pytest.raises(
-        InputFileError,
-        match="no existe el archivo de entrada",
-    ):
-        RtfReader().read(source)

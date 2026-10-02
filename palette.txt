@@ -1,0 +1,58 @@
+Audiobook Generator — Dark UI Palette
+=====================================
+
+Main background
+BG_COLOR       #023047
+
+Panels
+PANEL_BG       #06394A
+
+Input fields
+FIELD_BG       #082B36
+FIELD_FOCUS_BG #0B3542
+FIELD_BORDER   #17627A
+FIELD_FOCUS    #219EBC
+
+Accent
+ACCENT_COLOR   #FCBF49
+
+Text
+TEXT_COLOR     #FFFFFF
+SECONDARY_TEXT #A1D6E2
+
+Media / preview area
+MEDIA_BG       #0B2027
+
+
+Usage
+-----
+
+BG_COLOR
+Main application background.
+
+PANEL_BG
+Background used for panels and secondary containers.
+
+FIELD_BG
+Normal background of input fields.
+
+FIELD_FOCUS_BG
+Background of an input field while it has focus.
+
+FIELD_BORDER
+Normal border color for input fields.
+
+FIELD_FOCUS
+Border/accent color used when an input field has focus.
+
+ACCENT_COLOR
+Primary accent color used for buttons and highlighted UI elements.
+
+TEXT_COLOR
+Primary text color.
+
+SECONDARY_TEXT
+Secondary and descriptive text.
+
+MEDIA_BG
+Background used for media-related areas and previews.

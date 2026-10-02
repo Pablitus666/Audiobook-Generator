@@ -1,26 +1,48 @@
+# Python
 __pycache__/
 *.py[cod]
+*.pyo
+*.pyd
 
+# Entornos virtuales y variables locales
 .venv/
 venv/
+env/
 .env
+.env.*
 
+# IDE / editores
 .vscode/
 .idea/
 
+# Tests, cobertura y herramientas de desarrollo
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
 
+# Empaquetado y distribución
 build/
 dist/
 *.egg-info/
 
+# Archivos del sistema / macOS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs y archivos temporales
+*.log
+logs/
+temp/
+.audiobook_generator_temp/
+
+# Resultados generados localmente
 output/
 output_*/
 output-*/
-temp/
-logs/
 
 # Archivos de prueba locales
 /prueba*.txt
@@ -29,12 +51,22 @@ logs/
 /prueba*.xyz
 /vacio.txt
 
-# Cobertura y herramientas de testing
-.coverage
-coverage.xml
-htmlcov/
-.tox/
-.nox/
+# Archivos de ejemplo/pruebas del proyecto
+/examples/
 
-# Logs locales
-*.log
+# Archivos de firma y certificados privados
+*.cer
+*.pfx
+
+# Archivos de trabajo de diseño
+*.psd
+
+# Archivos nuevos de pruebas/ejemplos locales
+/examples/*
+
+# Archivos de firma y certificados privados
+*.cer
+*.pfx
+
+# Archivos de trabajo de diseño
+*.psd

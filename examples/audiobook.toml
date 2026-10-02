@@ -9,7 +9,7 @@ format = "mp3"
 bitrate = "192k"
 
 [processing]
-max_characters = 3000
+max_characters = 1500
 temp_dir = "temp"
 keep_chapters = true
 debug_ocr = false

@@ -85,14 +85,14 @@ def test_integration_keep_chapters_moves_files_to_output(
         )
     )
 
-    temp_root = tmp_path / "temp"
+    temp_dir = tmp_path / "temp" / "MiLibro"
     chapters_dir = output_dir / "chapters"
 
     assert result.merged_file is not None
     assert result.merged_file.exists()
     assert result.merged_file == output_dir / "libro_Audiobook.mp3"
 
-    assert not list(temp_root.glob("run-*"))
+    assert not temp_dir.exists()
     assert chapters_dir.exists()
     assert result.chapter_files
     assert all(path.exists() for path in result.chapter_files)
@@ -121,12 +121,12 @@ def test_integration_no_keep_chapters_removes_temp_files(
         )
     )
 
-    temp_root = tmp_path / "temp"
+    temp_dir = tmp_path / "temp" / "MiLibro"
     chapters_dir = output_dir / "chapters"
 
     assert result.merged_file is not None
     assert result.merged_file.exists()
-    assert not list(temp_root.glob("run-*"))
+    assert not temp_dir.exists()
     assert not chapters_dir.exists()
 
 
@@ -150,14 +150,11 @@ def test_integration_merge_failure_preserves_temp_files(
         )
     )
 
-    temp_root = tmp_path / "temp"
+    temp_dir = tmp_path / "temp" / "MiLibro"
 
     assert result.merged_file is None
-    assert temp_root.exists()
+    assert temp_dir.exists()
 
-    temporary_dirs = list(temp_root.glob("run-*"))
-    assert len(temporary_dirs) == 1
-    temp_dir = temporary_dirs[0]
     temporary_chapters = list(temp_dir.glob("*.mp3"))
 
     assert temporary_chapters

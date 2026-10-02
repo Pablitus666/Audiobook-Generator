@@ -20,7 +20,7 @@ class OutputConfig:
 
 @dataclass(frozen=True)
 class ProcessingConfig:
-    max_characters: int = 3000
+    max_characters: int = 1500
     temp_dir: Path = Path("temp")
     keep_chapters: bool = True
     debug_ocr: bool = False

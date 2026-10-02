@@ -20,7 +20,7 @@ def test_default_tts_config():
 def test_default_processing_config():
     config = ProcessingConfig()
 
-    assert config.max_characters == 3000
+    assert config.max_characters == 1500
     assert config.temp_dir == Path("temp")
     assert config.keep_chapters is True
     assert config.debug_ocr is False

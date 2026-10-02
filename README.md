@@ -1,6 +1,6 @@
 # Audiobook Generator
 
-Aplicación modular para convertir documentos de texto en audiolibros MP3 mediante Text-to-Speech (TTS).
+Aplicación modular para convertir documentos de texto en audiolibros MP3 mediante Text-to-Speech (TTS), con **CLI y una interfaz gráfica para Windows**.
 
 **Versión:** `1.0.0`
 
@@ -11,11 +11,10 @@ Aplicación modular para convertir documentos de texto en audiolibros MP3 median
 * Procesamiento por capítulos y fragmentos.
 * Motor TTS basado en `edge-tts`.
 * Cuatro perfiles de voz incluidos:
-
-  * `Sofía` — Sofía
-  * `Elvira` — Elvira
-  * `Marcelo` — Marcelo
-  * `Álvaro` — Álvaro
+  * `Sofía` — `es-BO-SofiaNeural`
+  * `Elvira` — `es-ES-ElviraNeural`
+  * `Marcelo` — `es-BO-MarceloNeural`
+  * `Álvaro` — `es-ES-AlvaroNeural`
 * Configuración de velocidad, volumen y tono.
 * División automática de contenido en capítulos.
 * División de capítulos extensos en fragmentos para TTS.
@@ -25,6 +24,15 @@ Aplicación modular para convertir documentos de texto en audiolibros MP3 median
 * Soporte OCR para documentos PDF escaneados.
 * Modo de diagnóstico OCR.
 * CLI disponible mediante `python -m audiobook_generator` y `audiobook-generator`.
+* Interfaz gráfica disponible mediante `python -m audiobook_generator.gui` y `audiobook-generator-gui`.
+* Detección automática del idioma de la interfaz, con soporte para español, inglés, alemán, francés, italiano, japonés, portugués, ruso y chino.
+* Selección de documentos mediante explorador y arrastrar y soltar en Windows.
+* Atajo `Enter` para iniciar la generación desde la ventana principal.
+* Navegación por teclado mediante `Tab` y limpieza de rutas con `Backspace`/`Delete`.
+* Barra de progreso y estado de generación en la GUI.
+* Limpieza automática del directorio temporal `.audiobook_generator_temp` al finalizar cada trabajo.
+* Diálogos visuales para advertencias, errores y generación completada.
+* Limpieza automática de los campos de entrada y salida después de una generación completada.
 * Suite automatizada de pruebas.
 
 ## Formatos de entrada
@@ -90,8 +98,41 @@ Las responsabilidades están separadas:
 * **FFmpeg:** une los archivos MP3.
 * **Pipeline:** coordina todo el proceso.
 * **CLI:** proporciona la interfaz de línea de comandos.
+* **GUI:** proporciona la interfaz gráfica sin duplicar la lógica del pipeline.
 
-La futura interfaz gráfica deberá utilizar este pipeline sin incorporar lógica de negocio directamente en la GUI.
+## Interfaz gráfica
+
+La GUI está implementada con Tkinter y utiliza los mismos componentes de configuración y procesamiento que la CLI. Está especialmente orientada al uso en Windows.
+
+La ventana principal permite:
+
+* seleccionar el documento de entrada;
+* arrastrar y soltar un documento compatible sobre el campo de entrada;
+* seleccionar el directorio de salida;
+* seleccionar voz, velocidad, volumen, tono y tamaño máximo de fragmento;
+* activar o desactivar la conservación de capítulos;
+* iniciar la generación;
+* observar el porcentaje y estado del procesamiento;
+* utilizar `Tab` para desplazarse entre los controles y `Enter` para generar;
+* limpiar las rutas seleccionadas con `Backspace` o `Delete`.
+
+Al completar correctamente una generación, la GUI reinicia el progreso y limpia los campos de entrada y salida para preparar el siguiente trabajo. El archivo generado y, si corresponde, la carpeta `chapters/` permanecen en el directorio de salida.
+
+Durante el procesamiento se utiliza un directorio temporal oculto llamado `.audiobook_generator_temp`. La GUI lo elimina automáticamente al finalizar el trabajo, tanto después de una generación correcta como cuando se produce un error.
+
+### Ejecutar la GUI
+
+Desde el entorno virtual:
+
+```powershell
+python -m audiobook_generator.gui
+```
+
+También está disponible el comando instalado:
+
+```powershell
+audiobook-generator-gui
+```
 
 ## Requisitos
 
@@ -100,6 +141,8 @@ La futura interfaz gráfica deberá utilizar este pipeline sin incorporar lógic
 * Python `3.10` o superior.
 * FFmpeg disponible en `PATH`.
 * Conexión a Internet para utilizar Edge TTS.
+
+Para utilizar la interfaz gráfica se incluyen dependencias opcionales de GUI como `Pillow` y `tkinterdnd2`.
 
 ### TTS
 
@@ -112,8 +155,6 @@ Por lo tanto, la generación de audio requiere conectividad de red.
 La generación TTS actual **no requiere GPU**.
 
 El procesamiento de texto, la división de capítulos y la comunicación con Edge TTS no utilizan una GPU local como requisito del proyecto.
-
-El sistema está diseñado para funcionar mediante CPU y servicios externos, por lo que una GPU dedicada no es necesaria para la arquitectura actual.
 
 ## Instalación
 
@@ -133,51 +174,28 @@ python -m venv .venv
 
 ### Instalar el proyecto
 
-Para instalar el paquete junto con todas las dependencias necesarias para desarrollo, documentación y OCR:
+Para instalar el paquete con las dependencias necesarias para desarrollo, GUI, documentación y OCR:
 
 ```powershell
-python -m pip install -e ".[dev,docs,ocr]"
+python -m pip install -e ".[dev,gui,docs,ocr]"
 ```
 
-La instalación completa incluye:
+La instalación de desarrollo incluye las herramientas de pruebas; `gui`, `docs` y `ocr` añaden las dependencias opcionales correspondientes.
 
-* `pytest`
-* `pytest-asyncio`
-* `reportlab`
-* `pypdf`
-* `python-docx`
-* `pymupdf`
-* `pytesseract`
-* `Pillow`
+### Dependencias de documentos
 
-## Dependencias opcionales
-
-### Documentos
-
-Las dependencias relacionadas con PDF y DOCX pueden instalarse mediante:
+También pueden instalarse mediante:
 
 ```powershell
 python -m pip install -r requirements-docs.txt
 ```
 
-O mediante el extra equivalente del paquete:
-
-```powershell
-python -m pip install -e ".[docs]"
-```
-
 ### OCR
 
-Para habilitar el procesamiento OCR de PDF:
+Para habilitar el procesamiento OCR:
 
 ```powershell
 python -m pip install -r requirements-ocr.txt
-```
-
-O mediante el extra equivalente:
-
-```powershell
-python -m pip install -e ".[ocr]"
 ```
 
 El OCR utiliza:
@@ -188,7 +206,7 @@ El OCR utiliza:
 
 Además de las dependencias Python, Tesseract debe estar instalado y disponible para el sistema cuando se utilice OCR.
 
-## Uso básico
+## Uso básico mediante CLI
 
 La forma general de ejecutar el programa es:
 
@@ -287,53 +305,30 @@ Para conservar información adicional durante el procesamiento:
 --debug-ocr
 ```
 
-Para desactivar explícitamente esta opción cuando `debug_ocr = true` está definido en TOML:
-
-```powershell
---no-debug-ocr
-```
-
 Esto permite inspeccionar el texto OCR original y el texto limpiado antes de enviarlo al motor TTS.
 
 ## Voces
 
-La aplicación expone cuatro perfiles de voz como nombres públicos estables:
+La aplicación dispone de cuatro perfiles de voz:
 
-| Nombre | Idioma | Género | Voz técnica (Edge TTS) |
-| --- | --- | --- | --- |
-| `Sofía` | Español (Bolivia) | Femenina | `es-BO-SofiaNeural` |
-| `Elvira` | Español (España) | Femenina | `es-ES-ElviraNeural` |
-| `Marcelo` | Español (Bolivia) | Masculina | `es-BO-MarceloNeural` |
-| `Álvaro` | Español (España) | Masculina | `es-ES-AlvaroNeural` |
+| Perfil | Idioma | Voz técnica |
+|---|---|---|
+| `Sofía` | Español (Bolivia) | `es-BO-SofiaNeural` |
+| `Elvira` | Español (España) | `es-ES-ElviraNeural` |
+| `Marcelo` | Español (Bolivia) | `es-BO-MarceloNeural` |
+| `Álvaro` | Español (España) | `es-ES-AlvaroNeural` |
 
-El usuario puede seleccionar una voz por su nombre público:
+La CLI permite consultar el catálogo mediante:
 
 ```powershell
-python -m audiobook_generator.cli `
-    --input "libro.pdf" `
-    --output ".\output\libro" `
-    --voice Álvaro
+python -m audiobook_generator.cli --list-voices
 ```
 
-Los nombres públicos no distinguen mayúsculas/minúsculas ni acentos. Por ejemplo, `Álvaro`, `alvaro` y `ALVARO` resuelven al mismo perfil.
-
-También se aceptan directamente los nombres técnicos de Edge TTS, manteniendo internamente el nombre público del perfil:
+También es posible utilizar directamente una voz compatible con Edge TTS:
 
 ```powershell
 --voice "es-ES-ElviraNeural"
 ```
-
-También se mantienen los identificadores antiguos (`female_1`, `female_2`, `male_1`, `male_2`) como alias de compatibilidad.
-
-### Catálogo de voces
-
-Para consultar las voces disponibles sin iniciar una conversión:
-
-```powershell
-audiobook-generator --list-voices
-```
-
-El resultado muestra el nombre público, idioma, género y nombre técnico de Edge TTS. Esta salida también sirve como base para una futura interfaz gráfica.
 
 ## Velocidad
 
@@ -384,7 +379,7 @@ El texto se divide en fragmentos para evitar enviar bloques excesivamente grande
 El tamaño máximo se controla mediante:
 
 ```powershell
---max-characters 3000
+--max-characters 1500
 ```
 
 Por ejemplo:
@@ -451,7 +446,7 @@ Para no conservar los capítulos individuales:
 --no-keep-chapters
 ```
 
-Si la generación o la unión falla, los archivos temporales necesarios se conservan para facilitar el diagnóstico.
+La GUI ofrece el mismo comportamiento mediante el interruptor **Conservar capítulos**.
 
 ## Bitrate MP3
 
@@ -504,7 +499,7 @@ Ejemplo:
 
 ```toml
 [tts]
-voice = "Elvira"
+voice = "es-ES-ElviraNeural"
 rate = "+0%"
 volume = "+0%"
 pitch = "+0Hz"
@@ -514,7 +509,7 @@ format = "mp3"
 bitrate = "160k"
 
 [processing]
-max_characters = 3000
+max_characters = 1500
 temp_dir = "temp"
 keep_chapters = true
 ```
@@ -530,29 +525,19 @@ python -m audiobook_generator.cli `
 
 Las opciones proporcionadas explícitamente por CLI tienen prioridad sobre los valores definidos en el archivo TOML.
 
-Por ejemplo:
-
-```powershell
-python -m audiobook_generator.cli `
-    --config ".\examples\audiobook.toml" `
-    --input "libro.txt" `
-    --rate "+10%"
-```
-
-En este caso, `+10%` tiene prioridad sobre el valor `rate` definido en el TOML.
-
 ## Directorios de trabajo
 
-Los archivos temporales se mantienen separados de los resultados finales.
-
-Una ejecución puede producir una estructura similar a:
+Los archivos temporales se mantienen separados de los resultados finales. En la GUI, el directorio temporal por ejecución es:
 
 ```text
-temp/
-└── libro/
-    ├── fragmentos temporales
-    └── archivos MP3 temporales
+.audiobook_generator_temp/
+```
 
+Este directorio se elimina automáticamente al terminar el trabajo de la GUI. En ejecuciones de CLI, el comportamiento de los archivos temporales depende de la configuración del pipeline y de la ejecución.
+
+Una salida con capítulos conservados puede tener esta estructura:
+
+```text
 output/
 └── libro/
     ├── libro_Audiobook.mp3
@@ -560,8 +545,6 @@ output/
         ├── CAPITULO_001.mp3
         └── ...
 ```
-
-Los directorios `output/` y `temp/` están excluidos del control de versiones.
 
 ## Testing
 
@@ -571,10 +554,10 @@ La suite automatizada se ejecuta mediante:
 python -m pytest -q
 ```
 
-Estado de la versión `1.0.0`:
+Validación actual del proyecto:
 
 ```text
-202 passed, 1 skipped
+226 passed, 1 skipped
 ```
 
 El test omitido corresponde a la integración real:
@@ -621,62 +604,27 @@ audiobook-generator 1.0.0
 Audiobook-Generator/
 │
 ├── audiobook_generator/
-│   ├── __init__.py
-│   ├── __main__.py
-│   ├── cli.py
-│   │
 │   ├── audio/
-│   │   ├── __init__.py
-│   │   └── ffmpeg.py
-│   │
 │   ├── core/
-│   │   ├── __init__.py
-│   │   ├── config.py
-│   │   ├── config_loader.py
-│   │   ├── errors.py
-│   │   ├── models.py
-│   │   ├── pipeline.py
-│   │   ├── preprocessor.py
-│   │   ├── splitter.py
-│   │   └── voices.py
-│   │
+│   ├── gui/
 │   ├── ocr/
-│   │   ├── __init__.py
-│   │   ├── base.py
-│   │   └── tesseract.py
-│   │
 │   ├── readers/
-│   │   ├── __init__.py
-│   │   ├── base.py
-│   │   ├── docx.py
-│   │   ├── epub.py
-│   │   ├── factory.py
-│   │   ├── html.py
-│   │   ├── odt.py
-│   │   ├── pdf.py
-│   │   ├── pdf_renderer.py
-│   │   ├── rtf.py
-│   │   └── text.py
-│   │
 │   └── tts/
-│       ├── __init__.py
-│       ├── base.py
-│       └── edge.py
+│
+├── assets/
+│   ├── fonts/
+│   ├── images/
+│   └── locales/
 │
 ├── docs/
-│   ├── ARCHITECTURE.md
-│   ├── OCR.md
-│   └── TESTING.md
-│
 ├── examples/
-│   ├── audiobook.toml
-│   └── ...
-│
+├── images/
 ├── tests/
 │
 ├── .gitignore
 ├── pyproject.toml
 ├── README.md
+├── RELEASE_DESCRIPTION.md
 ├── requirements.txt
 ├── requirements-docs.txt
 └── requirements-ocr.txt
@@ -684,9 +632,9 @@ Audiobook-Generator/
 
 ## Estado del proyecto
 
-**Audiobook Generator `1.0.0`** representa la primera versión funcional consolidada del proyecto.
+**Audiobook Generator `1.0.0`** es una versión funcional que reúne el núcleo de conversión, la CLI, OCR, configuración TOML y una interfaz gráfica de escritorio.
 
-El núcleo actual permite:
+El flujo de generación es:
 
 ```text
 Documento
@@ -716,25 +664,19 @@ FFmpeg
 Audiolibro final
 ```
 
-La arquitectura mantiene separados los lectores, procesamiento, OCR, TTS, audio y CLI, permitiendo ampliar posteriormente el proyecto sin acoplar la lógica de negocio a una interfaz gráfica.
-
-La GUI será una capa adicional sobre este núcleo y no deberá duplicar la lógica existente.
+La GUI funciona como una capa de presentación sobre este núcleo: no duplica la lógica de lectura, procesamiento, TTS ni unión de audio.
 
 ## Próximas etapas
 
-La versión `1.0.0` establece el núcleo funcional del proyecto.
-
 Las siguientes etapas pueden centrarse en:
 
-* interfaz gráfica;
-* experiencia de usuario;
-* selección visual de archivos;
-* configuración de voz y parámetros TTS;
-* progreso de generación;
-* gestión visual de capítulos;
+* mejoras de experiencia de usuario;
 * reproducción y previsualización del audio;
-* selección y administración de perfiles de voz;
+* gestión visual más avanzada de capítulos;
 * mejoras de diagnóstico y registro;
-* incorporación de nuevos motores TTS en el futuro.
+* incorporación de nuevos motores TTS en el futuro;
+* empaquetado y distribución independiente para Windows, incluido un posible instalador `.exe`.
 
-La arquitectura actual está preparada para que estas funciones se desarrollen sin reemplazar el pipeline existente.
+## Licencia
+
+Audiobook Generator se distribuye bajo la licencia **MIT**.

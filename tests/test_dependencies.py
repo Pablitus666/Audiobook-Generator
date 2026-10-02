@@ -8,6 +8,11 @@ def _project() -> dict:
     )["project"]
 
 
+def test_requirements_include_reportlab_for_pdf_test_support():
+    requirements = Path("requirements.txt").read_text(encoding="utf-8")
+    assert "reportlab>=5.0.0" in requirements
+
+
 def test_runtime_dependencies_keep_only_tts_engine():
     assert _project()["dependencies"] == ["edge-tts>=7.2.0"]
 

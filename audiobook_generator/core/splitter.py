@@ -145,6 +145,11 @@ def split_text(
 
     chapters: list[Chapter] = []
 
+    # Conserva cualquier contenido que aparezca antes del primer capítulo
+    # (por ejemplo, título, portada o instrucciones) para que también sea
+    # narrado en el audiolibro.
+    preamble = text[:matches[0].start()].strip()
+
     for index, match in enumerate(matches):
         start = match.end()
 
@@ -155,20 +160,37 @@ def split_text(
         )
 
         body = text[start:end].strip()
+        title = match.group(0).strip()
 
-        if not body:
+        if not body and not (index == 0 and preamble):
+            chapters.append(
+                Chapter(
+                    number=len(chapters) + 1,
+                    title=title,
+                    text=title,
+                )
+            )
             continue
+
+        # El encabezado es parte del contenido audible, no solamente
+        # metadata. El preámbulo se conserva antes del primer encabezado
+        # para respetar el orden exacto del documento.
+        parts_to_speak = []
+        if index == 0 and preamble:
+            parts_to_speak.append(preamble)
+        parts_to_speak.append(title)
+        if body:
+            parts_to_speak.append(body)
+        full_text = "\n\n".join(parts_to_speak)
 
         bodies = (
             _split_long_text(
-                body,
+                full_text,
                 max_characters,
             )
             if max_characters is not None
-            else [body]
+            else [full_text]
         )
-
-        title = match.group(0).strip()
 
         for part_index, part in enumerate(
             bodies,

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from html.parser import HTMLParser
-import re
 from pathlib import Path
 from typing import Final
 
@@ -125,35 +124,10 @@ class HtmlReader(DocumentReader):
 
     @staticmethod
     def _detect_encoding(raw: bytes) -> str:
-        """Detecta la codificación habitual de documentos HTML.
-
-        Prioriza BOM y después revisa las declaraciones ``charset`` de
-        ``meta``. Si no existe ninguna, UTF-8 sigue siendo el valor por
-        defecto moderno y seguro.
-        """
         if raw.startswith(b"\xef\xbb\xbf"):
             return "utf-8-sig"
         if raw.startswith(b"\xff\xfe") or raw.startswith(b"\xfe\xff"):
             return "utf-16"
-
-        head = raw[:8192].decode("ascii", errors="ignore")
-
-        match = re.search(
-            r"<meta\b[^>]+charset\s*=\s*[\"']?\s*([a-zA-Z0-9._:-]+)",
-            head,
-            flags=re.IGNORECASE,
-        )
-        if match:
-            return match.group(1)
-
-        match = re.search(
-            r"<meta\b[^>]+content\s*=\s*[\"'][^\"']*?charset\s*=\s*([a-zA-Z0-9._:-]+)",
-            head,
-            flags=re.IGNORECASE,
-        )
-        if match:
-            return match.group(1)
-
         return "utf-8"
 
 

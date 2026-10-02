@@ -32,29 +32,7 @@ def _validate_voice(value: str) -> str:
 
 def _voice_help() -> str:
     profiles = ", ".join(profile.name for profile in list_voice_profiles())
-    return f"Voces disponibles: {profiles}. También acepta nombres técnicos de Edge TTS."
-
-
-def _print_voice_catalog() -> None:
-    print("Voces disponibles:")
-    print()
-    print(f"{'Nombre':<10} {'Idioma':<22} {'Género':<12} {'Voz técnica'}")
-    print(f"{'-' * 10} {'-' * 22} {'-' * 12} {'-' * 28}")
-
-    gender_labels = {
-        "female": "Femenina",
-        "male": "Masculina",
-    }
-
-    language_labels = {
-        "es-BO": "Español (Bolivia)",
-        "es-ES": "Español (España)",
-    }
-
-    for profile in list_voice_profiles():
-        language = language_labels.get(profile.language, profile.language)
-        gender = gender_labels.get(profile.gender, profile.gender)
-        print(f"{profile.name:<10} {language:<22} {gender:<12} {profile.voice}")
+    return f"Voces disponibles: {profiles}."
 
 
 def _validate_bitrate(value: str) -> str:
@@ -99,22 +77,17 @@ def build_parser() -> argparse.ArgumentParser:
         action="version",
         version=f"%(prog)s {__version__}",
     )
-    parser.add_argument(
-        "--input",
-        required=False,
-        help="Archivo de entrada.",
-    )
-    parser.add_argument(
-        "--list-voices",
-        action="store_true",
-        help="Muestra el catálogo de voces disponibles y termina.",
-    )
+    parser.add_argument("--input", required=True, help="Archivo de entrada.")
     parser.add_argument(
         "--config",
         default=None,
         help="Archivo TOML de configuración.",
     )
-    parser.add_argument("--output", default="output", help="Directorio de salida.")
+    parser.add_argument(
+        "--output",
+        default=None,
+        help="Directorio de salida. Si no se especifica, se usa el directorio del archivo de entrada.",
+    )
     parser.add_argument(
         "--temp-dir",
         default="temp",
@@ -147,8 +120,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--max-characters",
         type=int,
-        default=3000,
-        help="Máximo de caracteres por fragmento TTS.",
+        default=1500,
+        help="Máximo de caracteres por fragmento TTS (por defecto: 1500).",
     )
     parser.add_argument(
         "--bitrate",
@@ -190,8 +163,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--debug-ocr",
-        action=argparse.BooleanOptionalAction,
-        default=False,
+        action="store_true",
         help=(
             "Guardar el texto OCR original y el texto limpiado antes del TTS "
             "para diagnóstico."
@@ -269,13 +241,6 @@ def _load_cli_config(
             keep_chapters=processing.keep_chapters,
             debug_ocr=True,
         )
-    if _option_was_supplied(argv, "--no-debug-ocr"):
-        processing = ProcessingConfig(
-            max_characters=processing.max_characters,
-            temp_dir=processing.temp_dir,
-            keep_chapters=processing.keep_chapters,
-            debug_ocr=False,
-        )
 
     ocr = config.ocr
 
@@ -323,16 +288,13 @@ def main() -> None:
     argv = sys.argv[1:]
     args = build_parser().parse_args(argv)
 
-    if args.list_voices:
-        _print_voice_catalog()
-        return
-
-    if args.input is None:
-        build_parser().error("--input es obligatorio salvo cuando se usa --list-voices")
-
     try:
         input_path = Path(args.input).expanduser().resolve()
-        output_dir = Path(args.output).expanduser().resolve()
+        output_dir = (
+            Path(args.output).expanduser().resolve()
+            if args.output is not None
+            else input_path.parent
+        )
 
         if not input_path.is_file():
             raise InputFileError(f"no existe el archivo de entrada: {input_path}")

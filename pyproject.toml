@@ -18,6 +18,11 @@ dev = [
     "reportlab>=5.0",
 ]
 
+gui = [
+    "Pillow>=11.0.0",
+    "tkinterdnd2>=0.4.3",
+]
+
 docs = [
     "pypdf>=6.0.0",
     "python-docx>=1.2.0",
@@ -32,6 +37,7 @@ ocr = [
 
 [project.scripts]
 audiobook-generator = "audiobook_generator.cli:main"
+audiobook-generator-gui = "audiobook_generator.gui.main_window:run"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

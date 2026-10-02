@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import unicodedata
 from typing import Final
 
 
@@ -64,25 +63,7 @@ _LEGACY_VOICE_IDS: Final[dict[str, str]] = {
 
 
 def _normalize(value: str) -> str:
-    """
-    Normaliza una entrada para comparación.
-
-    Permite ignorar:
-    - mayúsculas/minúsculas
-    - espacios exteriores
-    - acentos/diacríticos
-
-    Ejemplos:
-        "Sofía" -> "sofia"
-        "SOFIA" -> "sofia"
-        " Álvaro " -> "alvaro"
-    """
-    value = value.strip().casefold()
-    return "".join(
-        char
-        for char in unicodedata.normalize("NFD", value)
-        if unicodedata.category(char) != "Mn"
-    )
+    return value.strip().casefold()
 
 
 def list_voice_profiles() -> tuple[VoiceProfile, ...]:
@@ -91,17 +72,9 @@ def list_voice_profiles() -> tuple[VoiceProfile, ...]:
 
 
 def get_voice_profile(voice_id: str) -> VoiceProfile:
-    """
-    Obtiene una voz por su nombre público.
-
-    La comparación ignora mayúsculas, espacios exteriores y acentos.
-    También acepta los identificadores antiguos como alias.
-    """
+    """Obtiene un perfil por su nombre público, ignorando mayúsculas."""
     normalized = _normalize(voice_id)
-
-    legacy_id = _LEGACY_VOICE_IDS.get(normalized)
-    if legacy_id is not None:
-        normalized = _normalize(legacy_id)
+    normalized = _normalize(_LEGACY_VOICE_IDS.get(normalized, voice_id))
 
     for profile in VOICE_PROFILES:
         if _normalize(profile.id) == normalized:
@@ -115,12 +88,9 @@ def get_voice_profile(voice_id: str) -> VoiceProfile:
 
 def resolve_voice(voice_value: str) -> VoiceProfile:
     """
-    Resuelve una voz por:
+    Resuelve una voz por nombre público o por nombre técnico de Edge TTS.
 
-    - nombre público: Sofía, Elvira, Marcelo, Álvaro
-    - nombre sin acento: Sofia, Alvaro
-    - nombre técnico de Edge TTS
-    - identificador antiguo: female_1, female_2, male_1, male_2
+    También acepta los identificadores antiguos como alias de compatibilidad.
     """
     normalized = _normalize(voice_value)
 

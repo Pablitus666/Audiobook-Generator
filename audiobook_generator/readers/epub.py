@@ -172,7 +172,7 @@ class EpubReader(DocumentReader):
 
                 chapters: list[Chapter] = []
 
-                for item_id in spine:
+                for index, item_id in enumerate(spine, start=1):
                     item = manifest.get(item_id)
 
                     if item is None:
@@ -207,7 +207,7 @@ class EpubReader(DocumentReader):
 
                     chapters.append(
                         Chapter(
-                            number=len(chapters) + 1,
+                            number=index,
                             title=chapter_title,
                             text=text,
                         )

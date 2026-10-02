@@ -115,7 +115,10 @@ keep_chapters = false
     assert config.tts.volume == "+10%"
     assert config.tts.pitch == "+3Hz"
     assert config.output.bitrate == "192k"
+
+    # Una opción CLI explícita tiene prioridad sobre el valor del TOML.
     assert config.processing.max_characters == 3000
+
     assert config.processing.temp_dir == Path("cli_temp")
     assert config.processing.keep_chapters is True
     assert config.ocr.mode == "never"
@@ -137,7 +140,10 @@ def test_no_config_preserves_existing_cli_defaults():
     assert config.tts.volume == "+0%"
     assert config.tts.pitch == "+0Hz"
     assert config.output.bitrate == "192k"
-    assert config.processing.max_characters == 3000
+
+    # Nuevo valor predeterminado seguro.
+    assert config.processing.max_characters == 1500
+
     assert config.processing.temp_dir == Path("temp")
     assert config.processing.keep_chapters is True
 
@@ -167,53 +173,3 @@ keep_chapters = true
     config = cli._load_cli_config(args, argv)
 
     assert config.processing.keep_chapters is False
-
-
-def test_debug_ocr_cli_overrides_config_file(tmp_path: Path):
-    config_file = tmp_path / "audiobook.toml"
-    config_file.write_text(
-        """
-[processing]
-
-debug_ocr = true
-""",
-        encoding="utf-8",
-    )
-
-    argv = [
-        "--input",
-        "libro.txt",
-        "--config",
-        str(config_file),
-        "--no-debug-ocr",
-    ]
-
-    args = cli.build_parser().parse_args(argv)
-    config = cli._load_cli_config(args, argv)
-
-    assert config.processing.debug_ocr is False
-
-
-def test_debug_ocr_cli_enables_configured_false(tmp_path: Path):
-    config_file = tmp_path / "audiobook.toml"
-    config_file.write_text(
-        """
-[processing]
-
-debug_ocr = false
-""",
-        encoding="utf-8",
-    )
-
-    argv = [
-        "--input",
-        "libro.txt",
-        "--config",
-        str(config_file),
-        "--debug-ocr",
-    ]
-
-    args = cli.build_parser().parse_args(argv)
-    config = cli._load_cli_config(args, argv)
-
-    assert config.processing.debug_ocr is True

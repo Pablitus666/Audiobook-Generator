@@ -109,20 +109,6 @@ voice = "does-not-exist"
         load_config(config_file)
 
 
-def test_load_config_accepts_public_voice_name(tmp_path: Path):
-    config_file = write_config(
-        tmp_path,
-        """
-[tts]
-voice = "Elvira"
-""",
-    )
-
-    config = load_config(config_file)
-
-    assert config.tts.voice == "Elvira"
-
-
 def test_load_config_normalizes_legacy_edge_voice(tmp_path: Path):
     config_file = write_config(
         tmp_path,
@@ -135,30 +121,3 @@ voice = "es-ES-ElviraNeural"
     config = load_config(config_file)
 
     assert config.tts.voice == "Elvira"
-
-
-def test_load_config_accepts_boolean_debug_ocr(tmp_path: Path):
-    config_file = write_config(
-        tmp_path,
-        """
-[processing]
-debug_ocr = true
-""",
-    )
-
-    config = load_config(config_file)
-
-    assert config.processing.debug_ocr is True
-
-
-def test_load_config_rejects_non_boolean_debug_ocr(tmp_path: Path):
-    config_file = write_config(
-        tmp_path,
-        """
-[processing]
-debug_ocr = "true"
-""",
-    )
-
-    with pytest.raises(ValueError, match="debug_ocr"):
-        load_config(config_file)

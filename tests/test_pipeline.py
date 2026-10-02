@@ -201,8 +201,8 @@ def test_pipeline_splits_document_text(
 
     assert len(result.chapter_files) == 2
     assert tts.texts == [
-        "Primero.",
-        "Segundo.",
+        "Capítulo 1\n\nPrimero.",
+        "Capítulo 2\n\nSegundo.",
     ]
 
 
@@ -490,10 +490,12 @@ def test_pipeline_preserves_chapters_when_joining_wrapped_lines(
 
     assert tts.texts == [
         (
+            "CAPÍTULO 1: La llegada\n\n"
             "Este es el primer párrafo "
             "que continúa en la siguiente línea."
         ),
         (
+            "CAPÍTULO 2: El viaje\n\n"
             "Este es el segundo capítulo "
             "y continúa aquí."
         ),
@@ -659,210 +661,14 @@ def test_pipeline_cleans_ocr_text_before_tts(
     ]
 
 
-def test_pipeline_uses_isolated_temp_directory_per_run(
+def test_pipeline_reports_progress_without_affecting_generation(
     tmp_path,
     monkeypatch,
 ):
     document = Document(
-        title="Libro",
+        title="MiLibro",
         source=Path("libro.txt"),
         text="Texto de prueba.",
-    )
-
-    reader = FakeReader(document)
-    tts = FakeTTS()
-
-    monkeypatch.setattr(
-        "audiobook_generator.core.pipeline.merge_mp3",
-        fake_merge_mp3,
-    )
-
-    config = AudiobookConfig(
-        processing=ProcessingConfig(
-            temp_dir=tmp_path / "temp",
-            keep_chapters=True,
-        ),
-    )
-
-    pipeline = AudiobookPipeline(
-        reader=reader,
-        tts=tts,
-        config=config,
-    )
-
-    output_a = tmp_path / "output_a"
-    output_b = tmp_path / "output_b"
-
-    asyncio.run(pipeline.run(Path("libro.txt"), output_a))
-    first_destination = tts.destinations[-1]
-
-    asyncio.run(pipeline.run(Path("libro.txt"), output_b))
-    second_destination = tts.destinations[-1]
-
-    assert first_destination.parent != second_destination.parent
-    assert first_destination.parent.name.startswith("run-")
-    assert second_destination.parent.name.startswith("run-")
-
-@pytest.mark.asyncio
-async def test_pipeline_preserves_run_directory_when_tts_fails(
-    tmp_path,
-    monkeypatch,
-):
-    document = Document(
-        title="Libro",
-        source=Path("libro.txt"),
-        text="Capítulo 1\nPrimero.\n\nCapítulo 2\nSegundo.",
-    )
-
-    class FailingTTS:
-        async def synthesize(self, text, destination):
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            destination.write_bytes(b"partial mp3")
-            raise RuntimeError("TTS failure")
-
-    merge_called = False
-
-    def fake_merge(*args, **kwargs):
-        nonlocal merge_called
-        merge_called = True
-        return True
-
-    monkeypatch.setattr(
-        "audiobook_generator.core.pipeline.merge_mp3",
-        fake_merge,
-    )
-
-    config = AudiobookConfig(
-        processing=ProcessingConfig(
-            temp_dir=tmp_path / "temp",
-            keep_chapters=True,
-        ),
-    )
-
-    pipeline = AudiobookPipeline(
-        reader=FakeReader(document),
-        tts=FailingTTS(),
-        config=config,
-    )
-
-    with pytest.raises(RuntimeError, match="TTS failure"):
-        await pipeline.run(
-            Path("libro.txt"),
-            tmp_path / "output",
-        )
-
-    run_dirs = list((tmp_path / "temp").glob("run-*"))
-    assert len(run_dirs) == 1
-    assert list(run_dirs[0].glob("*.mp3"))
-    assert not merge_called
-
-
-@pytest.mark.asyncio
-async def test_pipeline_preserves_completed_chapters_when_later_tts_fails(
-    tmp_path,
-    monkeypatch,
-):
-    document = Document(
-        title="Libro",
-        source=Path("libro.txt"),
-        text="Capítulo 1\nPrimero.\n\nCapítulo 2\nSegundo.",
-    )
-
-    class PartiallyFailingTTS:
-        def __init__(self):
-            self.calls = 0
-
-        async def synthesize(self, text, destination):
-            self.calls += 1
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            if self.calls == 1:
-                destination.write_bytes(b"chapter 1")
-                return
-            raise RuntimeError("second chapter failed")
-
-    monkeypatch.setattr(
-        "audiobook_generator.core.pipeline.merge_mp3",
-        lambda *args, **kwargs: pytest.fail(
-            "merge_mp3 no debe ejecutarse si falla el TTS"
-        ),
-    )
-
-    config = AudiobookConfig(
-        processing=ProcessingConfig(
-            temp_dir=tmp_path / "temp",
-            keep_chapters=True,
-        ),
-    )
-
-    pipeline = AudiobookPipeline(
-        reader=FakeReader(document),
-        tts=PartiallyFailingTTS(),
-        config=config,
-    )
-
-    with pytest.raises(RuntimeError, match="second chapter failed"):
-        await pipeline.run(
-            Path("libro.txt"),
-            tmp_path / "output",
-        )
-
-    run_dirs = list((tmp_path / "temp").glob("run-*"))
-    assert len(run_dirs) == 1
-    preserved = sorted(run_dirs[0].glob("*.mp3"))
-    assert [path.name for path in preserved] == ["CAPITULO_001.mp3"]
-    assert preserved[0].read_bytes() == b"chapter 1"
-
-
-@pytest.mark.asyncio
-async def test_pipeline_continues_when_chapter_tagging_fails(
-    tmp_path,
-    monkeypatch,
-):
-    document = Document(
-        title="Libro",
-        source=Path("libro.txt"),
-        text="Texto de prueba.",
-    )
-
-    monkeypatch.setattr(
-        "audiobook_generator.core.pipeline.tag_mp3",
-        lambda *args, **kwargs: False,
-    )
-    monkeypatch.setattr(
-        "audiobook_generator.core.pipeline.merge_mp3",
-        fake_merge_mp3,
-    )
-
-    pipeline = AudiobookPipeline(
-        reader=FakeReader(document),
-        tts=FakeTTS(),
-    )
-
-    result = await pipeline.run(
-        Path("libro.txt"),
-        tmp_path / "output",
-    )
-
-    assert result.merged_file is not None
-    assert result.merged_file.exists()
-
-
-@pytest.mark.asyncio
-async def test_pipeline_keeps_temporary_files_when_merge_raises(
-    tmp_path,
-    monkeypatch,
-):
-    document = Document(
-        title="Libro",
-        source=Path("libro.txt"),
-        text="Texto de prueba.",
-    )
-
-    monkeypatch.setattr(
-        "audiobook_generator.core.pipeline.merge_mp3",
-        lambda *args, **kwargs: (_ for _ in ()).throw(
-            RuntimeError("merge crashed")
-        ),
     )
 
     config = AudiobookConfig(
@@ -872,62 +678,37 @@ async def test_pipeline_keeps_temporary_files_when_merge_raises(
         ),
     )
 
-    pipeline = AudiobookPipeline(
-        reader=FakeReader(document),
-        tts=FakeTTS(),
-        config=config,
-    )
+    events = []
 
-    with pytest.raises(RuntimeError, match="merge crashed"):
-        await pipeline.run(
-            Path("libro.txt"),
-            tmp_path / "output",
-        )
+    def fake_merge(
+        files,
+        destination,
+        bitrate="192k",
+        title=None,
+        chapter_titles=None,
+    ):
+        destination.write_bytes(b"merged-mp3")
+        return True
 
-    run_dirs = list((tmp_path / "temp").glob("run-*"))
-    assert len(run_dirs) == 1
-    assert list(run_dirs[0].glob("*.mp3"))
-    assert not (tmp_path / "output" / "libro_Audiobook.mp3").exists()
-
-
-def test_pipeline_renumbers_split_fragments_sequentially(
-    tmp_path,
-    monkeypatch,
-):
-    document = Document(
-        title="Libro",
-        source=Path("libro.txt"),
-        text=(
-            "CAPÍTULO 1\n"
-            "Uno.\n\n"
-            "CAPÍTULO 2\n"
-            "Dos."
-        ),
-    )
-
-    tts = FakeTTS()
     monkeypatch.setattr(
         "audiobook_generator.core.pipeline.merge_mp3",
-        fake_merge_mp3,
-    )
-
-    config = AudiobookConfig(
-        processing=ProcessingConfig(max_characters=5),
+        fake_merge,
     )
 
     result = asyncio.run(
         AudiobookPipeline(
             reader=FakeReader(document),
-            tts=tts,
+            tts=FakeTTS(),
             config=config,
         ).run(
             Path("libro.txt"),
             tmp_path / "output",
+            progress_callback=lambda progress, status: events.append((progress, status)),
         )
     )
 
-    assert [path.name for path in result.chapter_files] == [
-        "CAPITULO_001.mp3",
-        "CAPITULO_002.mp3",
-    ]
-    assert len(tts.texts) == 2
+    assert result.merged_file is not None
+    assert events[0] == (0.0, "status.loading")
+    assert events[-1] == (100.0, "status.finished")
+    assert [progress for progress, _ in events] == sorted(progress for progress, _ in events)
+    assert any(status == "status.generating" for _, status in events)

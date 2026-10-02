@@ -5,7 +5,7 @@ from audiobook_generator.core.config import (
     AudiobookConfig,
     ProcessingConfig,
 )
-from audiobook_generator.core.models import Document
+from audiobook_generator.core.models import Chapter, Document
 from audiobook_generator.core.pipeline import AudiobookPipeline
 
 
@@ -57,7 +57,7 @@ def test_keep_chapters_true_moves_chapter_files_to_output(
         chapter_titles=None,
     ):
         assert all(
-            file.parent.parent == temp_dir
+            file.parent == temp_dir / "MiLibro"
             for file in files
         )
 
@@ -97,7 +97,7 @@ def test_keep_chapters_true_moves_chapter_files_to_output(
         for chapter_file in result.chapter_files
     )
 
-    assert not list(temp_dir.glob("run-*"))
+    assert not (temp_dir / "MiLibro").exists()
 
 
 def test_keep_chapters_false_removes_temporary_files(
@@ -130,7 +130,7 @@ def test_keep_chapters_false_removes_temporary_files(
         chapter_titles=None,
     ):
         assert all(
-            file.parent.parent == temp_dir
+            file.parent == temp_dir / "MiLibro"
             for file in files
         )
 
@@ -166,7 +166,7 @@ def test_keep_chapters_false_removes_temporary_files(
         for chapter_file in result.chapter_files
     )
 
-    assert not list(temp_dir.glob("run-*"))
+    assert not (temp_dir / "MiLibro").exists()
     assert not (output_dir / "chapters").exists()
 
 
@@ -220,7 +220,7 @@ def test_keep_chapters_true_preserves_temporary_files_when_merge_fails(
         for chapter_file in result.chapter_files
     )
 
-    assert len(list(temp_dir.glob("run-*"))) == 1
+    assert (temp_dir / "MiLibro").exists()
     assert not (output_dir / "chapters").exists()
 
 
@@ -274,7 +274,7 @@ def test_keep_chapters_false_preserves_temporary_files_when_merge_fails(
         for chapter_file in result.chapter_files
     )
 
-    assert len(list(temp_dir.glob("run-*"))) == 1
+    assert (temp_dir / "MiLibro").exists()
     assert not (output_dir / "chapters").exists()
 
 
@@ -390,6 +390,69 @@ def test_pipeline_uses_configured_temp_dir(
 
     assert captured["files"]
     assert all(
-        file.parent.parent == temp_dir
+        file.parent == temp_dir / "MiLibro"
         for file in captured["files"]
     )
+
+
+def test_pipeline_does_not_invent_chapter_title_in_tts(
+    tmp_path,
+    monkeypatch,
+):
+    """El título estructural nunca se añade artificialmente al texto narrado."""
+    document = Document(
+        title="MiLibro",
+        source=Path("libro.epub"),
+        chapters=[
+            # El lector conoce el título como metadata, pero el texto real
+            # empieza directamente con el contenido.
+            Chapter(
+                number=1,
+                title="Capítulo 1",
+                text="Resumen real del capítulo.",
+            ),
+        ],
+    )
+
+    config = AudiobookConfig(
+        processing=ProcessingConfig(
+            temp_dir=tmp_path / "temp",
+            keep_chapters=True,
+        ),
+    )
+
+    reader = FakeReader(document)
+    captured = []
+
+    class CapturingTTS(FakeTTS):
+        async def synthesize(self, text, destination):
+            captured.append(text)
+            await super().synthesize(text, destination)
+
+    def fake_merge(
+        files,
+        destination,
+        bitrate="192k",
+        title=None,
+        chapter_titles=None,
+    ):
+        destination.write_bytes(b"merged-mp3")
+        return True
+
+    monkeypatch.setattr(
+        "audiobook_generator.core.pipeline.merge_mp3",
+        fake_merge,
+    )
+
+    asyncio.run(
+        AudiobookPipeline(
+            reader=reader,
+            tts=CapturingTTS(),
+            config=config,
+        ).run(
+            Path("libro.epub"),
+            tmp_path / "output",
+        )
+    )
+
+    assert captured == ["Resumen real del capítulo."]

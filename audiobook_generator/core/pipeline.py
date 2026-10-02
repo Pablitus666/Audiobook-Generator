@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import shutil
-import uuid
 from pathlib import Path
+from collections.abc import Callable
 
 from ..audio.ffmpeg import merge_mp3, tag_mp3
 from ..core.config import AudiobookConfig
@@ -15,7 +15,10 @@ from .preprocessor import (
     normalize_ocr_text,
     normalize_text,
 )
-from .splitter import split_text
+from .splitter import _split_long_text, split_text
+
+
+ProgressCallback = Callable[[float, str], None]
 
 
 class AudiobookPipeline:
@@ -33,13 +36,30 @@ class AudiobookPipeline:
         self,
         source: Path,
         output_dir: Path,
+        progress_callback: ProgressCallback | None = None,
     ) -> AudiobookResult:
+        """Generate the audiobook and optionally report UI progress.
+
+        ``progress_callback`` is deliberately optional so the pipeline keeps
+        the same API for the CLI and existing callers. Callback failures are
+        ignored: a GUI/status update must never be able to break generation.
+        """
+        def report(progress: float, status_key: str) -> None:
+            if progress_callback is None:
+                return
+            try:
+                progress_callback(max(0.0, min(100.0, progress)), status_key)
+            except Exception:
+                pass
+
+        report(0.0, "status.loading")
         output_dir.mkdir(
             parents=True,
             exist_ok=True,
         )
 
         document = self.reader.read(source)
+        report(5.0, "status.loading")
 
         if document.text:
             original_text = document.text
@@ -87,25 +107,39 @@ class AudiobookPipeline:
             if not text:
                 continue
 
-            parts = split_text(
-                text,
-                default_title=chapter.title,
-                max_characters=self.config.processing.max_characters,
+            # ``chapter.text`` es la única fuente de verdad para el texto
+            # que se entrega al TTS. ``chapter.title`` es metadata para
+            # nombres de archivo, consola y etiquetas MP3.
+            #
+            # Es importante NO anteponer ``chapter.title`` aquí: algunos
+            # lectores generan un título estructural a partir del nombre
+            # interno del recurso (por ejemplo, EPUB) y ese valor puede no
+            # existir realmente en el documento. Si lo añadimos, el audio
+            # termina pronunciando contenido que el usuario nunca escribió.
+            title = chapter.title.strip()
+
+            parts = (
+                _split_long_text(
+                    text,
+                    self.config.processing.max_characters,
+                )
+                if self.config.processing.max_characters is not None
+                else [text]
             )
 
-            for part in parts:
-                if not part.text.strip():
+            for part_index, part in enumerate(parts, start=1):
+                if not part.strip():
                     continue
+
+                part_title = title
+                if len(parts) > 1:
+                    part_title = f"{title} - Parte {part_index}"
 
                 processed_chapters.append(
                     Chapter(
                         number=len(processed_chapters) + 1,
-                        title=(
-                            chapter.title
-                            if len(parts) == 1
-                            else part.title
-                        ),
-                        text=part.text,
+                        title=part_title,
+                        text=part,
                     )
                 )
 
@@ -116,16 +150,23 @@ class AudiobookPipeline:
                 "el documento no contiene texto utilizable."
             )
 
+        report(10.0, "status.generating")
+
         temp_root = Path(self.config.processing.temp_dir)
-        temp_root.mkdir(parents=True, exist_ok=True)
-        # Cada ejecución obtiene su propio directorio temporal para evitar
-        # colisiones entre conversiones concurrentes del mismo documento.
-        temp_book_dir = temp_root / f"run-{uuid.uuid4().hex}"
-        temp_book_dir.mkdir(parents=True, exist_ok=False)
+        temp_book_dir = temp_root / document.title
+
+        temp_book_dir.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
 
         chapter_files: list[Path] = []
 
-        for chapter in chapters:
+        total_chapters = len(chapters)
+
+        for chapter_index, chapter in enumerate(chapters, start=1):
+            progress_before = 10.0 + ((chapter_index - 1) / total_chapters) * 80.0
+            report(progress_before, "status.generating")
             destination = (
                 temp_book_dir
                 / f"CAPITULO_{chapter.number:03d}.mp3"
@@ -152,7 +193,10 @@ class AudiobookPipeline:
             )
 
             chapter_files.append(destination)
+            progress_after = 10.0 + (chapter_index / total_chapters) * 80.0
+            report(progress_after, "status.generating")
 
+        report(95.0, "status.generating")
         merged = output_dir / f"{source.stem}_Audiobook.mp3"
 
         if not merge_mp3(
@@ -194,6 +238,7 @@ class AudiobookPipeline:
                 ignore_errors=True,
             )
 
+            report(100.0, "status.finished")
             return AudiobookResult(
                 chapter_files=output_chapter_files,
                 merged_file=merged,
@@ -204,6 +249,7 @@ class AudiobookPipeline:
             ignore_errors=True,
         )
 
+        report(100.0, "status.finished")
         return AudiobookResult(
             chapter_files=chapter_files,
             merged_file=merged,

@@ -321,36 +321,3 @@ def test_epub_reader_rejects_missing_container(
         match="container.xml válido",
     ):
         EpubReader().read(epub)
-
-def test_epub_reader_numbers_only_loaded_chapters_contiguously(tmp_path: Path):
-    epub = tmp_path / "libro.epub"
-
-    container_xml = """<?xml version="1.0" encoding="UTF-8"?>
-<container xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
-  <rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles>
-</container>
-"""
-    opf_xml = """<?xml version="1.0" encoding="UTF-8"?>
-<package xmlns="http://www.idpf.org/2007/opf" version="2.0">
-  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>Libro</dc:title></metadata>
-  <manifest>
-    <item id="missing" href="missing.xhtml" media-type="application/xhtml+xml"/>
-    <item id="chapter" href="chapter.xhtml" media-type="application/xhtml+xml"/>
-  </manifest>
-  <spine>
-    <itemref idref="missing"/>
-    <itemref idref="chapter"/>
-  </spine>
-</package>
-"""
-    chapter = "<html><body><h1>Capítulo</h1><p>Contenido.</p></body></html>"
-
-    with ZipFile(epub, "w", ZIP_DEFLATED) as archive:
-        archive.writestr("META-INF/container.xml", container_xml)
-        archive.writestr("OEBPS/content.opf", opf_xml)
-        archive.writestr("OEBPS/chapter.xhtml", chapter)
-
-    document = EpubReader().read(epub)
-
-    assert len(document.chapters) == 1
-    assert document.chapters[0].number == 1

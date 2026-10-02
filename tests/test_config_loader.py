@@ -72,7 +72,7 @@ voice = "Álvaro"
     assert config.tts.pitch == "+0Hz"
     assert config.output.format == "mp3"
     assert config.output.bitrate == "192k"
-    assert config.processing.max_characters == 3000
+    assert config.processing.max_characters == 1500
     assert config.processing.temp_dir == Path("temp")
     assert config.processing.keep_chapters is True
     assert config.ocr.mode == "auto"

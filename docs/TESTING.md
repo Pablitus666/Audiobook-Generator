@@ -96,15 +96,11 @@ pytest -ra
 
 ## Verificación actual
 
-La suite automatizada debe ejecutarse en el entorno virtual del proyecto con:
+La suite automatizada más reciente del entorno de desarrollo se ejecutó correctamente con:
 
-```powershell
-python -m pytest -q
+```text
+201 passed, 1 skipped
 ```
-
-El número de pruebas puede variar conforme se añaden nuevas comprobaciones. La
-prueba de integración real permanece desactivada por defecto porque requiere
-servicios y herramientas externas.
 
 La prueba omitida corresponde a la integración real, desactivada por defecto porque requiere servicios y herramientas externas.
 

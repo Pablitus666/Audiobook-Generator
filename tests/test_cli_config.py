@@ -15,15 +15,13 @@ def test_cli_default_configuration_arguments():
     assert args.rate == "+0%"
     assert args.volume == "+0%"
     assert args.pitch == "+0Hz"
-    assert args.max_characters == 3000
+    assert args.max_characters == 1500
     assert args.bitrate == "192k"
     assert args.keep_chapters is True
     assert args.temp_dir == "temp"
     assert args.ocr == "auto"
     assert args.ocr_language == "spa"
     assert args.ocr_dpi == 300
-    assert args.ocr_psm == 3
-    assert args.debug_ocr is False
 
 
 def test_cli_custom_configuration_arguments():
@@ -89,32 +87,3 @@ def test_cli_normalizes_legacy_edge_voice():
     )
 
     assert args.voice == "Elvira"
-
-
-def test_cli_accepts_edge_voice_names_without_changing_public_id():
-    parser = build_parser()
-
-    for technical_name, public_id in (
-        ("es-BO-SofiaNeural", "Sofía"),
-        ("es-ES-ElviraNeural", "Elvira"),
-        ("es-BO-MarceloNeural", "Marcelo"),
-        ("es-ES-AlvaroNeural", "Álvaro"),
-    ):
-        args = parser.parse_args(
-            ["--input", "libro.txt", "--voice", technical_name]
-        )
-        assert args.voice == public_id
-
-
-def test_cli_debug_ocr_can_be_enabled_and_disabled():
-    parser = build_parser()
-
-    enabled = parser.parse_args(
-        ["--input", "libro.txt", "--debug-ocr"]
-    )
-    disabled = parser.parse_args(
-        ["--input", "libro.txt", "--no-debug-ocr"]
-    )
-
-    assert enabled.debug_ocr is True
-    assert disabled.debug_ocr is False
