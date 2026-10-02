@@ -1,18 +1,74 @@
-# 🚀 Audiobook Generator — Notas de Versión
+# 🎙️ Audiobook Generator
 
-## Versión 1.0.0 — Lanzamiento inicial consolidado
+### 🚀 Audiobook Generator 1.0.0 (Python Edition)
 
-Audiobook Generator `1.0.0` reúne el núcleo de conversión de documentos a audiolibros MP3, la interfaz de línea de comandos (CLI), OCR para PDF y una interfaz gráfica de escritorio para Windows.
+Primera versión de **Audiobook Generator**, una aplicación de escritorio desarrollada en **Python (Tkinter)** orientada a la generación de audiolibros a partir de documentos.
 
-La versión mantiene una arquitectura modular en la que la GUI utiliza el mismo pipeline de lectura, procesamiento, Text-to-Speech y FFmpeg, sin duplicar la lógica de negocio.
+El proyecto automatiza la lectura, procesamiento, división por capítulos, conversión mediante Text-to-Speech y generación final de archivos MP3.
 
 ---
 
-## ✨ Características principales
+## 🎯 Objetivo de esta versión
 
-### 📚 Conversión de documentos
+Esta versión establece la base funcional de Audiobook Generator como una herramienta modular para Windows, separando claramente:
 
-Se incluyen lectores para:
+- La interfaz gráfica (GUI)
+- La interfaz de línea de comandos (CLI)
+- El procesamiento de documentos
+- El procesamiento OCR
+- La generación de audio mediante Text-to-Speech
+- El procesamiento y división por capítulos
+
+---
+
+## ✨ Novedades principales
+
+- 🎙️ Conversión de documentos a audiolibros MP3
+- 🖥️ Interfaz gráfica para Windows mediante Tkinter
+- ⌨️ Navegación mediante teclado
+- 🖱️ Arrastrar y soltar documentos
+- 🔊 Text-to-Speech mediante Edge TTS
+- 📚 Procesamiento automático por capítulos
+- ✂️ Fragmentación automática de capítulos extensos
+- 🧠 OCR para documentos PDF escaneados
+- 🌐 Interfaz localizada
+- ⚙️ Configuración mediante archivos TOML
+- 🧪 Suite automatizada de pruebas
+- 🧹 Limpieza automática de archivos temporales
+- 🎧 Conservación opcional de capítulos MP3 individuales
+
+---
+
+## 🖼️ Interfaz gráfica
+
+La aplicación incorpora una interfaz gráfica desarrollada con **Tkinter**, orientada al uso en Windows.
+
+La ventana principal permite:
+
+- Seleccionar documentos mediante el explorador de archivos
+- Arrastrar y soltar documentos compatibles
+- Seleccionar el directorio de salida
+- Seleccionar la voz
+- Configurar velocidad, volumen y tono
+- Configurar el tamaño máximo de fragmento
+- Activar o desactivar la conservación de capítulos
+- Iniciar la generación del audiolibro
+- Visualizar el progreso del procesamiento
+- Navegar mediante teclado
+
+Durante la generación se utiliza el directorio temporal:
+
+```text
+.audiobook_generator_temp/
+```
+
+Este directorio se elimina automáticamente al finalizar el trabajo de la GUI.
+
+---
+
+## 📄 Formatos de entrada
+
+Audiobook Generator incluye lectores para:
 
 - TXT
 - PDF
@@ -22,121 +78,13 @@ Se incluyen lectores para:
 - ODT
 - RTF
 
-El formato se detecta automáticamente y el contenido se transforma al modelo interno utilizado por el pipeline.
+---
 
-### 🖥️ Interfaz gráfica
+## 🧠 OCR para PDF
 
-La versión incluye una GUI basada en Tkinter, orientada al uso en Windows. Permite:
+Esta versión incorpora procesamiento OCR para documentos PDF que contienen páginas escaneadas.
 
-- seleccionar el documento de entrada mediante explorador de archivos;
-- arrastrar y soltar documentos compatibles sobre el campo de entrada;
-- seleccionar el directorio de salida;
-- seleccionar voz, velocidad, volumen, tono y tamaño máximo de fragmento;
-- conservar o no los capítulos MP3 individuales;
-- iniciar la generación desde un botón gráfico;
-- utilizar `Tab` para la navegación por teclado;
-- utilizar `Enter` como atajo para iniciar la generación;
-- limpiar las rutas seleccionadas con `Backspace` o `Delete`;
-- visualizar el porcentaje y el estado del procesamiento;
-- recibir diálogos visuales para advertencias, errores y finalización correcta.
-
-Después de una generación completada correctamente, la GUI reinicia el progreso y limpia los campos de entrada y salida para preparar el siguiente trabajo. El audiolibro generado y la carpeta `chapters/`, cuando se solicita conservar capítulos, permanecen en el directorio de salida.
-
-El directorio temporal `.audiobook_generator_temp` se elimina automáticamente al finalizar el trabajo de la GUI, incluso cuando se produce un error durante la generación.
-
-La GUI puede ejecutarse mediante:
-
-```powershell
-python -m audiobook_generator.gui
-```
-
-o mediante el comando instalado:
-
-```powershell
-audiobook-generator-gui
-```
-
-### 🌍 Localización
-
-La interfaz detecta automáticamente el idioma del sistema y dispone de traducciones para:
-
-- alemán (`de`)
-- inglés (`en`)
-- español (`es`)
-- francés (`fr`)
-- italiano (`it`)
-- japonés (`ja`)
-- portugués (`pt`)
-- ruso (`ru`)
-- chino (`zh`)
-
-El inglés se utiliza como idioma de respaldo cuando el idioma detectado no está soportado.
-
-### 🧩 Pipeline modular
-
-El procesamiento se organiza en etapas independientes:
-
-```text
-Documento
-   ↓
-ReaderFactory
-   ↓
-Preprocesamiento
-   ↓
-Capítulos
-   ↓
-Fragmentación
-   ↓
-Edge TTS
-   ↓
-MP3
-   ↓
-FFmpeg
-   ↓
-Audiolibro final
-```
-
-Esta separación permite que la GUI y la CLI utilicen el mismo núcleo de procesamiento.
-
-### 🔊 Voces
-
-Se incluyen cuatro perfiles de voz:
-
-| Nombre | Idioma | Voz técnica |
-|---|---|---|
-| `Sofía` | Español (Bolivia) | `es-BO-SofiaNeural` |
-| `Elvira` | Español (España) | `es-ES-ElviraNeural` |
-| `Marcelo` | Español (Bolivia) | `es-BO-MarceloNeural` |
-| `Álvaro` | Español (España) | `es-ES-AlvaroNeural` |
-
-La CLI permite consultar el catálogo mediante:
-
-```powershell
-python -m audiobook_generator.cli --list-voices
-```
-
-También acepta directamente identificadores de voz compatibles con Edge TTS y conserva alias de compatibilidad para configuraciones anteriores.
-
-### 🎛️ Control TTS
-
-La aplicación permite configurar:
-
-- voz;
-- velocidad;
-- volumen;
-- tono;
-- tamaño máximo de fragmento;
-- bitrate MP3.
-
-### 📖 Capítulos
-
-El sistema detecta estructuras de capítulos y divide capítulos extensos en fragmentos adecuados para TTS.
-
-Los capítulos MP3 individuales pueden conservarse mediante `--keep-chapters` en la CLI o mediante el interruptor correspondiente en la GUI.
-
-### 🧠 OCR
-
-El procesamiento OCR de PDF admite:
+Se pueden utilizar tres modos:
 
 ```text
 auto
@@ -144,114 +92,240 @@ always
 never
 ```
 
-También permite configurar idioma, DPI, modo de segmentación de Tesseract y diagnóstico OCR.
-
-La documentación específica se encuentra en:
+También permite configurar:
 
 ```text
-docs/OCR.md
+--ocr-language "spa"
+--ocr-dpi 300
+--ocr-psm 6
+```
+
+Para documentos en español e inglés:
+
+```text
+--ocr-language "spa+eng"
+```
+
+Para diagnóstico:
+
+```text
+--debug-ocr
+```
+
+El OCR utiliza PyMuPDF, Tesseract y Pillow.
+
+---
+
+## 🔊 Voces
+
+La aplicación incluye perfiles de voz en español:
+
+| Perfil | Idioma | Voz técnica |
+|---|---|---|
+| `Sofía` | Español (Bolivia) | `es-BO-SofiaNeural` |
+| `Elvira` | Español (España) | `es-ES-ElviraNeural` |
+| `Marcelo` | Español (Bolivia) | `es-BO-MarceloNeural` |
+| `Álvaro` | Español (España) | `es-ES-AlvaroNeural` |
+
+También es posible consultar el catálogo disponible mediante:
+
+```powershell
+python -m audiobook_generator.cli --list-voices
 ```
 
 ---
 
-## ⚙️ Configuración
+## 🎛️ Control del audio
 
-Audiobook Generator admite archivos TOML para centralizar parámetros de TTS, salida y procesamiento. Las opciones proporcionadas explícitamente mediante CLI tienen prioridad sobre la configuración del archivo TOML.
+La generación permite configurar:
+
+### Velocidad
+
+```text
+--rate "+10%"
+```
+
+### Volumen
+
+```text
+--volume "+10%"
+```
+
+### Tono
+
+```text
+--pitch "+2Hz"
+```
+
+### Fragmentación
+
+```text
+--max-characters 1500
+```
+
+El valor máximo de caracteres debe ser mayor que cero.
 
 ---
 
-## 🧪 Validación y pruebas
+## 📚 Capítulos
 
-La validación actual del proyecto mediante la suite automatizada es:
+El sistema identifica automáticamente estructuras de capítulos.
+
+Cuando un capítulo supera el límite máximo de caracteres, se divide automáticamente en fragmentos adecuados para el procesamiento TTS.
+
+Los capítulos individuales pueden conservarse mediante:
+
+```text
+--keep-chapters
+```
+
+---
+
+## ⚙️ Configuración TOML
+
+Audiobook Generator permite definir parámetros mediante archivos TOML.
+
+Ejemplo:
+
+```toml
+[tts]
+voice = "es-ES-ElviraNeural"
+rate = "+0%"
+volume = "+0%"
+pitch = "+0Hz"
+
+[output]
+format = "mp3"
+bitrate = "160k"
+
+[processing]
+max_characters = 1500
+temp_dir = "temp"
+keep_chapters = true
+```
+
+Las opciones proporcionadas directamente mediante CLI tienen prioridad sobre los valores definidos en el archivo TOML.
+
+---
+
+## 🚀 Ejecución
+
+### Interfaz gráfica
+
+```powershell
+python -m audiobook_generator.gui
+```
+
+También está disponible:
+
+```powershell
+audiobook-generator-gui
+```
+
+### CLI
+
+Ejemplo:
+
+```powershell
+python -m audiobook_generator.cli `
+    --input "libro.txt" `
+    --output ".\output"
+```
+
+Para consultar todas las opciones:
+
+```powershell
+python -m audiobook_generator.cli --help
+```
+
+---
+
+## 🛠️ Instalación para desarrollo
+
+Crear el entorno virtual:
+
+```powershell
+python -m venv .venv
+```
+
+Activarlo:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Instalar el proyecto:
+
+```powershell
+python -m pip install -e ".[dev,gui,docs,ocr]"
+```
+
+---
+
+## 🧪 Testing
+
+La suite automatizada se ejecuta mediante:
+
+```powershell
+python -m pytest -q
+```
+
+Estado de las pruebas:
 
 ```text
 226 passed, 1 skipped
 ```
 
-El test omitido corresponde a:
+El test omitido corresponde a la integración real, desactivada por defecto.
 
-```text
-tests/test_integration_real.py
-```
-
-Está desactivado por defecto porque utiliza servicios y herramientas reales. Puede ejecutarse explícitamente con:
+Para ejecutarla:
 
 ```powershell
 $env:RUN_REAL_INTEGRATION="1"
+
 python -m pytest tests\test_integration_real.py -v
 ```
 
-Además de la suite automatizada, la GUI fue ejecutada desde el entorno virtual y se verificó una generación real de cuatro etapas, con salida registrada hasta:
+---
 
-```text
-[1/4] Generando: Resumen Completo
-[2/4] Generando: Resumen Completo
-[3/4] Generando: Resumen Completo
-[4/4] Generando: Resumen Completo
-```
+## 📦 Requisitos
 
-La generación TTS requiere conectividad a Edge TTS y la generación final del audiolibro requiere FFmpeg disponible en `PATH`.
+- Python `3.10` o superior
+- FFmpeg disponible en `PATH`
+- Conexión a Internet para Edge TTS
+- Tesseract instalado para utilizar OCR
 
 ---
 
-## 💻 Entorno de desarrollo
+## 📦 Estado del proyecto
 
-El paquete declara:
-
-```text
-Python >= 3.10
-```
-
-La aplicación se ha validado en Windows con Python de la serie 3.14 y un entorno virtual `.venv`.
-
-Para la GUI se utilizan Tkinter, Pillow y `tkinterdnd2` como dependencia opcional de arrastrar y soltar. Las funciones OCR requieren además Tesseract instalado localmente.
-
----
-
-## 📦 Distribución
-
-La versión `1.0.0` se distribuye como proyecto Python y CLI, e incluye la interfaz gráfica.
-
-El repositorio utiliza el tag:
-
-```text
-v1.0.0
-```
-
-Repositorio:
-
-https://github.com/Pablitus666/Audiobook-Generator
-
-Esta versión **no incluye todavía un instalador `.exe` independiente**. El empaquetado para Windows queda planificado para una etapa posterior.
-
----
-
-## 🗺️ Próximas etapas
-
-Entre las líneas de evolución previstas se encuentran:
-
-- reproducción y previsualización del audio;
-- gestión visual más avanzada de capítulos;
-- mejoras de diagnóstico y registro;
-- nuevos motores TTS cuando resulte conveniente;
-- empaquetado y distribución independiente para Windows;
-- un posible instalador `.exe`.
-
----
-
-## 👨‍💻 Créditos
-
-**Walter Pablo Téllez Ayala**  
-Software Developer  
-📍 Bolivia 🇧🇴
-📧 pharmakoz@gmail.com
-
-**Versión:** 1.0.0  
-**Proyecto:** Audiobook Generator  
-© 2026 — Audiobook Generator
+- ✔️ Versión `1.0.0`
+- ✔️ CLI funcional
+- ✔️ Interfaz gráfica funcional
+- ✔️ Soporte para múltiples formatos de entrada
+- ✔️ OCR integrado
+- ✔️ Procesamiento por capítulos
+- ✔️ Text-to-Speech mediante Edge TTS
+- ✔️ Configuración TOML
+- ✔️ Suite automatizada de pruebas
+- ✔️ Compatible con Windows
 
 ---
 
 ## 📄 Licencia
 
-Audiobook Generator se distribuye bajo la licencia **MIT**.
+Este proyecto se distribuye bajo la licencia **MIT**.
+
+---
+
+## 👨‍💻 Autor
+
+**Walter Pablo Téllez Ayala**
+
+Software Developer
+
+📍 Bolivia 🇧🇴
+
+📧 pharmakoz@gmail.com
+
+© 2026 — Audiobook Generator
