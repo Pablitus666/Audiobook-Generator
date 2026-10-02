@@ -33,21 +33,7 @@ El proyecto automatiza la lectura, procesamiento, división por capítulos, conv
 
 Audiobook Generator está diseñado para ofrecer una experiencia clara y modular, separando la interfaz gráfica, la CLI y el núcleo de procesamiento.
 
-![Platform](https://img.shields.io/badge/platform-Windows-0078D6?style=flat&logo=windows&logoColor=white)
-
-![Language](https://img.shields.io/badge/language-Python-3776AB?style=flat&logo=python&logoColor=white)
-
-![UI](https://img.shields.io/badge/UI-Tkinter-FFDD54?style=flat)
-
-![TTS](https://img.shields.io/badge/TTS-Edge%20TTS-blue?style=flat)
-
-![Audio](https://img.shields.io/badge/output-MP3-5C2D91?style=flat)
-
-![Status](https://img.shields.io/badge/status-stable-brightgreen?style=flat)
-
-![OCR](https://img.shields.io/badge/OCR-Tesseract-success?style=flat)
-
-![License](https://img.shields.io/badge/license-MIT-green?style=flat)
+![Platform](https://img.shields.io/badge/platform-Windows-0078D6?style=flat&logo=windows&logoColor=white) ![Language](https://img.shields.io/badge/language-Python-3776AB?style=flat&logo=python&logoColor=white) ![UI](https://img.shields.io/badge/UI-Tkinter-FFDD54?style=flat) ![TTS](https://img.shields.io/badge/TTS-Edge%20TTS-blue?style=flat) ![Audio](https://img.shields.io/badge/output-MP3-5C2D91?style=flat) ![Status](https://img.shields.io/badge/status-stable-brightgreen?style=flat) ![OCR](https://img.shields.io/badge/OCR-Tesseract-success?style=flat) ![License](https://img.shields.io/badge/license-MIT-green?style=flat)
 
 ---
 
