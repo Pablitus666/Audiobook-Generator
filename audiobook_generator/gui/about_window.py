@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import Toplevel
 
 from .styles import ACCENT_COLOR, BG_COLOR, FONT_FAMILY, TEXT_COLOR
+from .widgets import configure_native_window_icons
 
 
 class AboutWindow(Toplevel):
@@ -29,13 +30,10 @@ class AboutWindow(Toplevel):
 
         self._load_assets()
 
-        icon_path = self.image_manager.images_dir / "icon.ico"
-        if icon_path.is_file():
-            try:
-                self.iconbitmap(default=str(icon_path))
-                self.iconbitmap(str(icon_path))
-            except (tk.TclError, OSError, ValueError):
-                pass
+        configure_native_window_icons(
+            self,
+            self.image_manager.images_dir,
+        )
 
         self._create_widgets()
         self._center_popup()

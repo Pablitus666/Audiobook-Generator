@@ -34,5 +34,7 @@
   "dialog.warning.select_document": "Sélectionnez un document avant de générer le livre audio.",
   "dialog.error.invalid_document": "Le document sélectionné n’existe pas ou son format n’est pas pris en charge.",
   "dialog.error.invalid_max_characters": "Le nombre maximal de caractères doit être supérieur à zéro.",
-  "button.ok": "OK"
+  "button.ok": "OK",
+  "button.open_folder": "Ouvrir",
+  "dialog.error.output_directory_not_found": "Le dossier de sortie est introuvable."
 }

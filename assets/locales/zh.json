@@ -34,5 +34,7 @@
   "dialog.warning.select_document": "生成有声书前请选择文档。",
   "dialog.error.invalid_document": "所选文档不存在或其格式不受支持。",
   "dialog.error.invalid_max_characters": "最大字符数必须大于零。",
-  "button.ok": "确定"
+  "button.ok": "确定",
+  "button.open_folder": "打开",
+  "dialog.error.output_directory_not_found": "未找到输出目录。"
 }

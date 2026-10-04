@@ -34,5 +34,7 @@
   "dialog.warning.select_document": "Выберите документ перед созданием аудиокниги.",
   "dialog.error.invalid_document": "Выбранный документ не существует или его формат не поддерживается.",
   "dialog.error.invalid_max_characters": "Максимальное количество символов должно быть больше нуля.",
-  "button.ok": "ОК"
+  "button.ok": "ОК",
+  "button.open_folder": "Открыть",
+  "dialog.error.output_directory_not_found": "Папка вывода не найдена."
 }

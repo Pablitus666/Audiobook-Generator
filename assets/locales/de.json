@@ -34,5 +34,7 @@
   "dialog.warning.select_document": "Wähle vor der Erstellung des Hörbuchs ein Dokument aus.",
   "dialog.error.invalid_document": "Das ausgewählte Dokument existiert nicht oder sein Format wird nicht unterstützt.",
   "dialog.error.invalid_max_characters": "Die maximale Zeichenanzahl muss größer als null sein.",
-  "button.ok": "OK"
+  "button.ok": "OK",
+  "button.open_folder": "Öffnen",
+  "dialog.error.output_directory_not_found": "Das Ausgabeverzeichnis wurde nicht gefunden."
 }

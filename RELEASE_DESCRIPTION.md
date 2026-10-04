@@ -1,193 +1,215 @@
-# 🎙️ Audiobook Generator
+🎙️ Audiobook Generator
 
-### 🚀 Audiobook Generator 1.0.0 (Python Edition)
+🚀 Audiobook Generator 1.0.0
 
-Primera versión de **Audiobook Generator**, una aplicación de escritorio desarrollada en **Python (Tkinter)** orientada a la generación de audiolibros a partir de documentos.
+Audiobook Generator is a Windows desktop application for turning books and other documents into MP3 audiobooks using Microsoft Edge TTS.
 
-El proyecto automatiza la lectura, procesamiento, división por capítulos, conversión mediante Text-to-Speech y generación final de archivos MP3.
+The project combines document extraction, chapter detection, text cleanup, optional OCR, text-to-speech generation and audio assembly into a single workflow. It provides both a graphical interface for everyday use and a CLI for automation and advanced workflows.
 
----
+✨ What makes Audiobook Generator useful?
 
-## 🎯 Objetivo de esta versión
+Audiobook Generator is designed to take a document and handle most of the work required to transform it into a listenable audiobook:
 
-Esta versión establece la base funcional de Audiobook Generator como una herramienta modular para Windows, separando claramente:
+📄 Reads multiple document formats.
 
-- La interfaz gráfica (GUI)
-- La interfaz de línea de comandos (CLI)
-- El procesamiento de documentos
-- El procesamiento OCR
-- La generación de audio mediante Text-to-Speech
-- El procesamiento y división por capítulos
+📚 Detects and processes chapters automatically.
 
----
+✂️ Splits long chapters into TTS-compatible fragments.
 
-## ✨ Novedades principales
+🧠 Uses OCR when a PDF contains scanned pages.
 
-- 🎙️ Conversión de documentos a audiolibros MP3
-- 🖥️ Interfaz gráfica para Windows mediante Tkinter
-- ⌨️ Navegación mediante teclado
-- 🖱️ Arrastrar y soltar documentos
-- 🔊 Text-to-Speech mediante Edge TTS
-- 📚 Procesamiento automático por capítulos
-- ✂️ Fragmentación automática de capítulos extensos
-- 🧠 OCR para documentos PDF escaneados
-- 🌐 Interfaz localizada
-- ⚙️ Configuración mediante archivos TOML
-- 🧪 Suite automatizada de pruebas
-- 🧹 Limpieza automática de archivos temporales
-- 🎧 Conservación opcional de capítulos MP3 individuales
+🔊 Generates speech through Microsoft Edge TTS.
 
----
+🎛️ Lets you control voice, speed, volume and pitch.
 
-## 🖼️ Interfaz gráfica
+🎧 Produces MP3 audio and can optionally preserve individual chapter files.
 
-La aplicación incorpora una interfaz gráfica desarrollada con **Tkinter**, orientada al uso en Windows.
+🏷️ Adds audiobook metadata and chapter navigation information to the generated audio.
 
-La ventana principal permite:
+🖥️ Provides a Windows GUI with drag-and-drop support.
 
-- Seleccionar documentos mediante el explorador de archivos
-- Arrastrar y soltar documentos compatibles
-- Seleccionar el directorio de salida
-- Seleccionar la voz
-- Configurar velocidad, volumen y tono
-- Configurar el tamaño máximo de fragmento
-- Activar o desactivar la conservación de capítulos
-- Iniciar la generación del audiolibro
-- Visualizar el progreso del procesamiento
-- Navegar mediante teclado
+⌨️ Supports keyboard-oriented workflows.
 
-Durante la generación se utiliza el directorio temporal:
+🌐 Provides a localized interface with language handling suitable for Windows users.
 
-```text
+⚙️ Supports TOML configuration for repeatable workflows.
+
+🧹 Manages temporary processing files automatically.
+
+The goal is not simply to convert text to speech, but to provide a complete document-to-audiobook workflow.
+
+🖥️ Windows application
+
+Audiobook Generator is primarily designed for Windows.
+
+The application can be used from source with Python or distributed as a standalone Windows executable. The release build is packaged with PyInstaller, so the end user does not need to install Python just to run the packaged application.
+
+The graphical interface includes:
+
+Document selection
+
+Drag and drop
+
+Output directory selection
+
+Voice selection
+
+Speech speed, volume and pitch controls
+
+Maximum fragment size
+
+Optional chapter preservation
+
+OCR controls
+
+Progress and processing status
+
+Keyboard navigation
+
+Input validation and user feedback
+
+The application also handles temporary processing data automatically through:
+
 .audiobook_generator_temp/
-```
 
-Este directorio se elimina automáticamente al finalizar el trabajo de la GUI.
+📄 Supported input formats
 
----
+Audiobook Generator can process:
 
-## 📄 Formatos de entrada
+TXT
 
-Audiobook Generator incluye lectores para:
+PDF
 
-- TXT
-- PDF
-- DOCX
-- EPUB
-- HTML
-- ODT
-- RTF
+DOCX
 
----
+EPUB
 
-## 🧠 OCR para PDF
+HTML
 
-Esta versión incorpora procesamiento OCR para documentos PDF que contienen páginas escaneadas.
+ODT
 
-Se pueden utilizar tres modos:
+RTF
 
-```text
+Markdown
+
+PDF documents can additionally be processed through the OCR pipeline when their content is image-based or otherwise requires text recognition.
+
+🧠 OCR
+
+The OCR pipeline is intended primarily for scanned PDF documents.
+
+It supports three operating modes:
+
 auto
 always
 never
-```
 
-También permite configurar:
+It also provides configuration for:
 
-```text
 --ocr-language "spa"
 --ocr-dpi 300
 --ocr-psm 6
-```
 
-Para documentos en español e inglés:
+Multiple OCR languages can be selected, for example:
 
-```text
 --ocr-language "spa+eng"
-```
 
-Para diagnóstico:
+For troubleshooting and diagnostics:
 
-```text
 --debug-ocr
-```
 
-El OCR utiliza PyMuPDF, Tesseract y Pillow.
+The OCR workflow integrates PyMuPDF, Tesseract and Pillow, with processing intended to reduce common OCR noise before the text reaches the audiobook pipeline.
 
----
+🔊 Text-to-Speech
 
-## 🔊 Voces
+Audiobook Generator uses Microsoft Edge TTS for speech synthesis.
 
-La aplicación incluye perfiles de voz en español:
+The application includes Spanish voice profiles such as:
 
-| Perfil | Idioma | Voz técnica |
-|---|---|---|
-| `Sofía` | Español (Bolivia) | `es-BO-SofiaNeural` |
-| `Elvira` | Español (España) | `es-ES-ElviraNeural` |
-| `Marcelo` | Español (Bolivia) | `es-BO-MarceloNeural` |
-| `Álvaro` | Español (España) | `es-ES-AlvaroNeural` |
+Profile
 
-También es posible consultar el catálogo disponible mediante:
+Language
 
-```powershell
+Technical voice
+
+Sofía
+
+Spanish (Bolivia)
+
+es-BO-SofiaNeural
+
+Elvira
+
+Spanish (Spain)
+
+es-ES-ElviraNeural
+
+Marcelo
+
+Spanish (Bolivia)
+
+es-BO-MarceloNeural
+
+Álvaro
+
+Spanish (Spain)
+
+es-ES-AlvaroNeural
+
+The available Edge TTS catalog can also be queried through the CLI:
+
 python -m audiobook_generator.cli --list-voices
-```
 
----
+An Internet connection is required for Edge TTS generation.
 
-## 🎛️ Control del audio
+🎛️ Audio controls
 
-La generación permite configurar:
+Speech generation can be customized through the GUI, CLI or TOML configuration.
 
-### Velocidad
+Speed
 
-```text
 --rate "+10%"
-```
 
-### Volumen
+Volume
 
-```text
 --volume "+10%"
-```
 
-### Tono
+Pitch
 
-```text
 --pitch "+2Hz"
-```
 
-### Fragmentación
+Maximum fragment size
 
-```text
 --max-characters 1500
-```
 
-El valor máximo de caracteres debe ser mayor que cero.
+Long chapters are automatically divided into smaller fragments so they can be processed safely by the TTS pipeline.
 
----
+📚 Chapters and audiobook output
 
-## 📚 Capítulos
+Audiobook Generator detects chapter structures in supported documents and processes them as separate logical sections.
 
-El sistema identifica automáticamente estructuras de capítulos.
+A long chapter can be divided into multiple TTS fragments while remaining part of the same chapter.
 
-Cuando un capítulo supera el límite máximo de caracteres, se divide automáticamente en fragmentos adecuados para el procesamiento TTS.
+When requested, individual chapter MP3 files can also be retained:
 
-Los capítulos individuales pueden conservarse mediante:
-
-```text
 --keep-chapters
-```
 
----
+The final audiobook can include metadata and chapter navigation information, making it easier to move between sections when the player supports those features.
 
-## ⚙️ Configuración TOML
+🌐 Localization
 
-Audiobook Generator permite definir parámetros mediante archivos TOML.
+The GUI includes localization support and can adapt its language according to the configured environment.
 
-Ejemplo:
+The project includes localized resources under the application assets, while the application also allows the language to be controlled explicitly when required.
 
-```toml
+This makes the same application suitable for users working in different Windows language environments.
+
+⚙️ Configuration
+
+Audiobook Generator supports TOML configuration files so that frequently used settings can be stored and reused.
+
+Example:
+
 [tts]
 voice = "es-ES-ElviraNeural"
 rate = "+0%"
@@ -196,131 +218,153 @@ pitch = "+0Hz"
 
 [output]
 format = "mp3"
-bitrate = "160k"
+bitrate = "192k"
 
 [processing]
 max_characters = 1500
 temp_dir = "temp"
 keep_chapters = true
-```
 
-Las opciones proporcionadas directamente mediante CLI tienen prioridad sobre los valores definidos en el archivo TOML.
+Command-line options take precedence over values supplied by the TOML configuration.
 
----
+This makes it possible to maintain a preferred configuration while still overriding individual options for a particular audiobook.
 
-## 🚀 Ejecución
+🚀 Using the application
 
-### Interfaz gráfica
+Graphical interface
 
-```powershell
+From a development environment:
+
 python -m audiobook_generator.gui
-```
 
-También está disponible:
+The installed Python package also provides:
 
-```powershell
 audiobook-generator-gui
-```
 
-### CLI
+For normal Windows users, the preferred distribution method is the packaged application available through the project's releases.
 
-Ejemplo:
+CLI
 
-```powershell
+A basic example:
+
 python -m audiobook_generator.cli `
     --input "libro.txt" `
     --output ".\output"
-```
 
-Para consultar todas las opciones:
+To view all available options:
 
-```powershell
 python -m audiobook_generator.cli --help
-```
 
----
+The CLI uses the same processing core as the GUI, making it suitable for scripted and repeatable workflows.
 
-## 🛠️ Instalación para desarrollo
+🛠️ Development
 
-Crear el entorno virtual:
+Create a virtual environment:
 
-```powershell
 python -m venv .venv
-```
 
-Activarlo:
+Activate it:
 
-```powershell
 .\.venv\Scripts\Activate.ps1
-```
 
-Instalar el proyecto:
+Install the project and development dependencies:
 
-```powershell
 python -m pip install -e ".[dev,gui,docs,ocr]"
-```
 
----
+The project separates the graphical interface, command-line interface, document readers, OCR, TTS integration, audio processing and core pipeline so that individual components can be tested and maintained independently.
 
-## 🧪 Testing
+🧪 Testing
 
-La suite automatizada se ejecuta mediante:
+The project includes an automated test suite covering the main processing components.
 
-```powershell
+Run the standard suite with:
+
 python -m pytest -q
-```
 
-Estado de las pruebas:
+The 1.0.0 development cycle reached:
 
-```text
 226 passed, 1 skipped
-```
 
-El test omitido corresponde a la integración real, desactivada por defecto.
+The skipped test corresponds to the real integration workflow, which is disabled by default.
 
-Para ejecutarla:
+It can be executed with:
 
-```powershell
 $env:RUN_REAL_INTEGRATION="1"
-
 python -m pytest tests\test_integration_real.py -v
-```
 
----
+📦 Requirements
 
-## 📦 Requisitos
+For development or execution from source:
 
-- Python `3.10` o superior
-- FFmpeg disponible en `PATH`
-- Conexión a Internet para Edge TTS
-- Tesseract instalado para utilizar OCR
+Python 3.10 or newer
 
----
+FFmpeg available in PATH
 
-## 📦 Estado del proyecto
+Internet connection for Edge TTS
 
-- ✔️ Versión `1.0.0`
-- ✔️ CLI funcional
-- ✔️ Interfaz gráfica funcional
-- ✔️ Soporte para múltiples formatos de entrada
-- ✔️ OCR integrado
-- ✔️ Procesamiento por capítulos
-- ✔️ Text-to-Speech mediante Edge TTS
-- ✔️ Configuración TOML
-- ✔️ Suite automatizada de pruebas
-- ✔️ Compatible con Windows
+Tesseract for OCR functionality
 
----
+The standalone Windows release packages the application so that Python does not need to be installed separately by the end user.
 
-## 📄 Licencia
+📦 Distribution
 
-Este proyecto se distribuye bajo la licencia **MIT**.
+Audiobook Generator 1.0.0 is distributed as a Windows application.
 
----
+The release workflow uses:
 
-## 👨‍💻 Autor
+PyInstaller for the standalone executable
 
-**Walter Pablo Téllez Ayala**
+Inno Setup for the Windows installer
+
+The repository contains the source code and project files; generated release binaries and local signing materials are kept outside the source repository and published separately through the project's release distribution.
+
+✅ Version 1.0.0
+
+Version 1.0.0 represents the first complete release of Audiobook Generator.
+
+The release includes:
+
+✔️ Windows GUI
+
+✔️ CLI
+
+✔️ Drag-and-drop document input
+
+✔️ Multiple document formats
+
+✔️ Chapter detection and processing
+
+✔️ Automatic chapter fragmentation
+
+✔️ Edge TTS integration
+
+✔️ Voice, speed, volume and pitch controls
+
+✔️ OCR pipeline for scanned PDFs
+
+✔️ TOML configuration
+
+✔️ Localized interface
+
+✔️ Temporary-file management
+
+✔️ Optional chapter MP3 preservation
+
+✔️ Audiobook metadata and chapter navigation
+
+✔️ Automated test suite
+
+✔️ Standalone Windows executable
+
+✔️ Windows installer
+
+📄 License
+
+This project is distributed under the MIT License.
+
+👨‍💻 Author
+
+Walter Pablo Téllez Ayala
 
 Software Developer
 

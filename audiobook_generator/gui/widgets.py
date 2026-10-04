@@ -1,6 +1,9 @@
 """Reusable visual widgets for Audiobook Generator."""
 
+import ctypes
 import tkinter as tk
+from ctypes import wintypes
+from pathlib import Path
 from tkinter import ttk
 
 
@@ -31,6 +34,121 @@ from PIL import Image, ImageDraw, ImageTk
 from .styles import ACCENT_COLOR, BG_COLOR, FIELD_BG, FONT_FALLBACK_FAMILY, FONT_FAMILY, SECONDARY_TEXT_COLOR, TEXT_COLOR, WIDGET_DARK, FIELD_BORDER, MEDIA_BG
 
 
+GUI_ICON_FILENAME = "loguito.ico"
+
+
+def configure_native_window_icons(
+    window: tk.Misc,
+    images_dir: Path,
+    *,
+    icon_filename: str = GUI_ICON_FILENAME,
+) -> None:
+    """Apply the GUI icon to every native icon slot of a Tk window.
+
+    ``icon.ico`` is intentionally NOT used by the running GUI.  It is the
+    PyInstaller executable icon declared in ``AudiobookGenerator.spec``.
+    The running application's main window, taskbar icon, Alt+Tab icon and
+    secondary dialogs all use ``loguito.ico``.
+
+    The same ICO is loaded at both the small and large Win32 sizes so Windows
+    can select the appropriate embedded image for each surface.  The native
+    icon handles are retained on the window for its lifetime.
+    """
+    icon_path = Path(images_dir) / icon_filename
+
+    if not icon_path.is_file():
+        return
+
+    # Tk fallback for non-Windows platforms and environments without Win32.
+    if not hasattr(ctypes, "windll"):
+        try:
+            window.iconbitmap(default=str(icon_path))
+            window.iconbitmap(str(icon_path))
+        except (tk.TclError, OSError, ValueError):
+            pass
+        return
+
+    try:
+        hwnd = window.winfo_id()
+        if not hwnd:
+            raise OSError("Tk window handle is not available")
+
+        user32 = ctypes.windll.user32
+
+        IMAGE_ICON = 1
+        LR_LOADFROMFILE = 0x00000010
+        WM_SETICON = 0x0080
+        ICON_SMALL = 0
+        ICON_BIG = 1
+        SM_CXICON = 11
+        SM_CYICON = 12
+        SM_CXSMICON = 49
+        SM_CYSMICON = 50
+
+        HWND = wintypes.HWND
+        UINT = wintypes.UINT
+        INT = wintypes.INT
+        LPARAM = wintypes.LPARAM
+        WPARAM = wintypes.WPARAM
+        LRESULT = wintypes.LRESULT
+
+        user32.LoadImageW.argtypes = [
+            HWND, wintypes.LPCWSTR, UINT, INT, INT, UINT
+        ]
+        user32.LoadImageW.restype = ctypes.c_void_p
+        user32.SendMessageW.argtypes = [
+            HWND, UINT, WPARAM, LPARAM
+        ]
+        user32.SendMessageW.restype = LRESULT
+
+        small_width = int(user32.GetSystemMetrics(SM_CXSMICON))
+        small_height = int(user32.GetSystemMetrics(SM_CYSMICON))
+        big_width = int(user32.GetSystemMetrics(SM_CXICON))
+        big_height = int(user32.GetSystemMetrics(SM_CYICON))
+
+        try:
+            user32.GetDpiForWindow.argtypes = [HWND]
+            user32.GetDpiForWindow.restype = UINT
+            dpi = int(user32.GetDpiForWindow(hwnd))
+            get_metrics_for_dpi = getattr(
+                user32, "GetSystemMetricsForDpi", None
+            )
+            if dpi and get_metrics_for_dpi is not None:
+                get_metrics_for_dpi.argtypes = [INT, UINT]
+                get_metrics_for_dpi.restype = INT
+                small_width = int(get_metrics_for_dpi(SM_CXSMICON, dpi))
+                small_height = int(get_metrics_for_dpi(SM_CYSMICON, dpi))
+                big_width = int(get_metrics_for_dpi(SM_CXICON, dpi))
+                big_height = int(get_metrics_for_dpi(SM_CYICON, dpi))
+        except (AttributeError, OSError, TypeError, ValueError):
+            pass
+
+        h_small = user32.LoadImageW(
+            None, str(icon_path), IMAGE_ICON, small_width, small_height,
+            LR_LOADFROMFILE,
+        )
+        h_big = user32.LoadImageW(
+            None, str(icon_path), IMAGE_ICON, big_width, big_height,
+            LR_LOADFROMFILE,
+        )
+
+        if not h_small or not h_big:
+            raise OSError("Windows could not load the GUI ICO resources")
+
+        window._native_window_icon = h_small
+        window._native_large_icon = h_big
+
+        user32.SendMessageW(hwnd, WM_SETICON, ICON_SMALL, h_small)
+        user32.SendMessageW(hwnd, WM_SETICON, ICON_BIG, h_big)
+
+    except (AttributeError, OSError, TypeError, ValueError, tk.TclError):
+        try:
+            window.iconbitmap(default=str(icon_path))
+            window.iconbitmap(str(icon_path))
+        except (tk.TclError, OSError, ValueError):
+            pass
+
+
 def _font_family(widget) -> str:
     return getattr(widget.winfo_toplevel(), "font_family", FONT_FAMILY)
 
@@ -38,7 +156,7 @@ def _font_family(widget) -> str:
 class AssetButton(tk.Button):
     """Graphical button based on the project's official button asset."""
 
-    def __init__(self, master, image_manager, text, command=None, width=180, height=52, **kwargs):
+    def __init__(self, master, image_manager, text, command=None, width=180, height=52, asset_filename="boton.png", **kwargs):
         # Resolve the font from the already-initialized parent.  ``self`` is
         # not a Tk widget until ``super().__init__`` has completed, so calling
         # ``self.winfo_toplevel()`` here would raise ``AttributeError: ... tk``.
@@ -46,7 +164,7 @@ class AssetButton(tk.Button):
         self._command = command
         self._enabled = True
         self._image_manager = image_manager
-        self._image = image_manager.load("boton.png", width, height, enhance=True)
+        self._image = image_manager.load(asset_filename, width, height, enhance=True)
         super().__init__(
             master,
             image=self._image,
@@ -110,7 +228,15 @@ class StyledMessageDialog(tk.Toplevel):
     WIDTH = 450
     HEIGHT = 160
 
-    def __init__(self, parent, title: str, message: str, kind: str = "info"):
+    def __init__(
+        self,
+        parent,
+        title: str,
+        message: str,
+        kind: str = "info",
+        action_label: str | None = None,
+        action_command=None,
+    ):
         super().__init__(parent)
         self.withdraw()
         self.parent = parent
@@ -119,14 +245,9 @@ class StyledMessageDialog(tk.Toplevel):
         self.resizable(False, False)
         self.transient(parent)
 
-        icon_path = getattr(getattr(parent, "images", None), "images_dir", None)
-        if icon_path is not None:
-            icon_file = icon_path / "icon.ico"
-            if icon_file.is_file():
-                try:
-                    self.iconbitmap(default=str(icon_file))
-                except (tk.TclError, OSError, ValueError):
-                    pass
+        images_dir = getattr(getattr(parent, "images", None), "images_dir", None)
+        if images_dir is not None:
+            configure_native_window_icons(self, images_dir)
 
         family = _font_family(self)
         emoji = {"error": "❌", "info": "ℹ️"}.get(kind, "ℹ️")
@@ -194,20 +315,51 @@ class StyledMessageDialog(tk.Toplevel):
         message_label.place(x=92, y=18, width=304, height=72)
 
         image_manager = getattr(parent, "images", None)
+        ok_text = getattr(getattr(parent, "i18n", None), "t", lambda key: "OK")("button.ok")
+        has_action = action_command is not None and bool(action_label)
+
         if image_manager is not None:
+            if has_action:
+                action = AssetButton(
+                    outer,
+                    image_manager,
+                    action_label,
+                    command=action_command,
+                    width=130,
+                    height=48,
+                    asset_filename="boton1.png",
+                    takefocus=False,
+                )
+                action.place(x=113, y=95, width=140, height=48)
+
             ok = AssetButton(
                 outer,
                 image_manager,
-                getattr(getattr(parent, "i18n", None), "t", lambda key: "OK")("button.ok"),
+                ok_text,
                 command=self.destroy,
                 width=130,
                 height=48,
                 takefocus=False,
             )
         else:
+            if has_action:
+                action = tk.Button(
+                    outer,
+                    text=action_label,
+                    command=action_command,
+                    bg="#087EA4",
+                    fg=TEXT_COLOR,
+                    font=(family, 10, "bold"),
+                    relief="flat",
+                    bd=0,
+                    highlightthickness=0,
+                    takefocus=False,
+                )
+                action.place(x=113, y=95, width=140, height=48)
+
             ok = tk.Button(
                 outer,
-                text=getattr(getattr(parent, "i18n", None), "t", lambda key: "OK")("button.ok"),
+                text=ok_text,
                 command=self.destroy,
                 bg="#087EA4",
                 fg=TEXT_COLOR,
@@ -249,9 +401,23 @@ class StyledMessageDialog(tk.Toplevel):
             py = (self.winfo_screenheight() - self.HEIGHT) // 2
         self.geometry(f"{self.WIDTH}x{self.HEIGHT}+{max(0, px)}+{max(0, py)}")
 
-def show_message_dialog(parent, title: str, message: str, kind: str = "info") -> None:
-    """Show a modal application-styled information/warning/error dialog."""
-    StyledMessageDialog(parent, title, message, kind=kind)
+def show_message_dialog(
+    parent,
+    title: str,
+    message: str,
+    kind: str = "info",
+    action_label: str | None = None,
+    action_command=None,
+) -> None:
+    """Show a modal application-styled dialog with an optional action button."""
+    StyledMessageDialog(
+        parent,
+        title,
+        message,
+        kind=kind,
+        action_label=action_label,
+        action_command=action_command,
+    )
 
 
 class SwitchToggle(tk.Frame):

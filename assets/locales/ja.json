@@ -34,5 +34,7 @@
   "dialog.warning.select_document": "オーディオブックを生成する前にドキュメントを選択してください。",
   "dialog.error.invalid_document": "選択したドキュメントが存在しないか、形式がサポートされていません。",
   "dialog.error.invalid_max_characters": "最大文字数は 0 より大きくする必要があります。",
-  "button.ok": "OK"
+  "button.ok": "OK",
+  "button.open_folder": "開く",
+  "dialog.error.output_directory_not_found": "出力フォルダーが見つかりません。"
 }

@@ -369,9 +369,15 @@ def prepare_combobox(combobox: object) -> object:
     return combobox
 
 
-def configure_styles(root: object) -> ttk.Style:
-    """Configure the ttk styles used throughout the application."""
-    family = resolve_font_family(root)
+def configure_styles(root: object, family: str | None = None) -> ttk.Style:
+    """Configure the ttk styles used throughout the application.
+
+    ``family`` may be supplied by ``MainWindow`` after its one-time font
+    resolution. This avoids registering/querying the bundled fonts twice
+    during startup.
+    """
+    if family is None:
+        family = resolve_font_family(root)
     style = ttk.Style(root)
 
     try:

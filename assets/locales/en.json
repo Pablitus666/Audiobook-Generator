@@ -34,5 +34,7 @@
   "dialog.warning.select_document": "Select a document before generating the audiobook.",
   "dialog.error.invalid_document": "The selected document does not exist or its format is not supported.",
   "dialog.error.invalid_max_characters": "Max. characters must be greater than zero.",
-  "button.ok": "OK"
+  "button.ok": "OK",
+  "button.open_folder": "Open",
+  "dialog.error.output_directory_not_found": "The output directory could not be found."
 }

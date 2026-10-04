@@ -1,8 +1,48 @@
 from __future__ import annotations
 
+import inspect
+import os
 import shutil
 import subprocess
 from pathlib import Path
+
+
+_WINDOWS_NO_WINDOW = (
+    getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000)
+    if os.name == "nt"
+    else 0
+)
+
+
+def _run_process(command: list[str], **kwargs):
+    """Run an external process without opening a Windows console window.
+
+    Real ``subprocess.run`` accepts arbitrary Popen keyword arguments, so on
+    Windows we pass ``CREATE_NO_WINDOW``.  The small signature check keeps the
+    helper compatible with narrow test doubles that intentionally expose only
+    ``(command, check)``.  It does not affect normal runtime execution.
+    """
+    if _WINDOWS_NO_WINDOW:
+        try:
+            parameters = inspect.signature(subprocess.run).parameters
+        except (TypeError, ValueError):
+            parameters = {}
+
+        accepts_kwargs = any(
+            parameter.kind is inspect.Parameter.VAR_KEYWORD
+            for parameter in parameters.values()
+        )
+
+        if "creationflags" in parameters or accepts_kwargs:
+            kwargs.setdefault(
+                "creationflags",
+                _WINDOWS_NO_WINDOW,
+            )
+
+    return subprocess.run(
+        command,
+        **kwargs,
+    )
 
 
 def _concat_line(path: Path) -> str:
@@ -31,7 +71,7 @@ def _probe_duration_ms(
 ) -> int | None:
     """Return an audio file duration in milliseconds when available."""
     try:
-        result = subprocess.run(
+        result = _run_process(
             [
                 ffprobe,
                 "-v",
@@ -145,7 +185,7 @@ def tag_mp3(
     ]
 
     try:
-        subprocess.run(
+        _run_process(
             command,
             check=True,
         )
@@ -278,7 +318,7 @@ def merge_mp3(
             ]
         )
 
-        subprocess.run(
+        _run_process(
             command,
             check=True,
         )

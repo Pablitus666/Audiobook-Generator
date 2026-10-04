@@ -1,21 +1,34 @@
+# ============================================================
+# Audiobook Generator - .gitignore
+# ============================================================
+
+# ------------------------------------------------------------
 # Python
+# ------------------------------------------------------------
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
 
+# ------------------------------------------------------------
 # Entornos virtuales y variables locales
+# ------------------------------------------------------------
 .venv/
+.venv-release/
 venv/
 env/
 .env
 .env.*
 
+# ------------------------------------------------------------
 # IDE / editores
+# ------------------------------------------------------------
 .vscode/
 .idea/
 
+# ------------------------------------------------------------
 # Tests, cobertura y herramientas de desarrollo
+# ------------------------------------------------------------
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
@@ -23,50 +36,64 @@ env/
 .coverage.*
 htmlcov/
 
+# ------------------------------------------------------------
 # Empaquetado y distribución
+# ------------------------------------------------------------
 build/
 dist/
 *.egg-info/
 
-# Archivos del sistema / macOS
+# Instalador y artefactos locales de release
+Audiobook-Generator Instalador/
+
+# ------------------------------------------------------------
+# Archivos del sistema
+# ------------------------------------------------------------
 .DS_Store
 Thumbs.db
 Desktop.ini
 
+# ------------------------------------------------------------
 # Logs y archivos temporales
+# ------------------------------------------------------------
 *.log
 logs/
 temp/
 .audiobook_generator_temp/
 
+# ------------------------------------------------------------
 # Resultados generados localmente
+# ------------------------------------------------------------
 output/
 output_*/
 output-*/
 
+# ------------------------------------------------------------
 # Archivos de prueba locales
+# ------------------------------------------------------------
 /prueba*.txt
 /prueba*.pdf
 /prueba*.docx
 /prueba*.xyz
 /vacio.txt
 
-# Archivos de ejemplo/pruebas del proyecto
+# ------------------------------------------------------------
+# Archivos de ejemplo/pruebas locales
+# ------------------------------------------------------------
 /examples/
 
+# ------------------------------------------------------------
 # Archivos de firma y certificados privados
+# ------------------------------------------------------------
 *.cer
 *.pfx
+firmar_app.ps1
 
+# ------------------------------------------------------------
 # Archivos de trabajo de diseño
+# ------------------------------------------------------------
 *.psd
 
-# Archivos nuevos de pruebas/ejemplos locales
-/examples/*
+# Herramientas externas de terceros
+tools/
 
-# Archivos de firma y certificados privados
-*.cer
-*.pfx
-
-# Archivos de trabajo de diseño
-*.psd

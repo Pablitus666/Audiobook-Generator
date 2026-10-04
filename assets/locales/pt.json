@@ -34,5 +34,7 @@
   "dialog.warning.select_document": "Selecione um documento antes de gerar o audiolivro.",
   "dialog.error.invalid_document": "O documento selecionado não existe ou o formato não é compatível.",
   "dialog.error.invalid_max_characters": "O número máximo de caracteres deve ser maior que zero.",
-  "button.ok": "OK"
+  "button.ok": "OK",
+  "button.open_folder": "Abrir",
+  "dialog.error.output_directory_not_found": "O diretório de saída não foi encontrado."
 }
