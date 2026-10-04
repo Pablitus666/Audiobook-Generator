@@ -13,7 +13,7 @@ La versión 1.0.0 incorpora una aplicación Windows empaquetada en un ejecutable
 ---
 
 <p align="center">
-  <img src="images/screenshot.png?v=2" alt="Vista previa de Audiobook Generator" width="600"/>
+  <img src="images/Preview.png?v=2" alt="Vista previa de Audiobook Generator" width="600"/>
 </p>
 
 ---
