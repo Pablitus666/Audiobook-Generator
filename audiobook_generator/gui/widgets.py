@@ -4,7 +4,7 @@ import ctypes
 import tkinter as tk
 from ctypes import wintypes
 from pathlib import Path
-from tkinter import ttk
+from tkinter import ttk, font as tkfont
 
 
 def shorten_path(path: str, max_length: int = 72) -> str:
@@ -226,7 +226,78 @@ class StyledMessageDialog(tk.Toplevel):
     """Compact application-styled modal message dialog."""
 
     WIDTH = 450
-    HEIGHT = 160
+    HEIGHT = 180
+
+    @staticmethod
+    def _fit_message_to_three_lines(message, font, max_width=304, max_lines=3):
+        """Fit dialog text into at most three visual lines."""
+        text = str(message).strip()
+        if not text:
+            return ""
+
+        def split_long_word(word):
+            chunks = []
+            remaining = word
+            while remaining:
+                chunk = ""
+                for char in remaining:
+                    candidate = chunk + char
+                    if font.measure(candidate) <= max_width:
+                        chunk = candidate
+                    else:
+                        break
+                if not chunk:
+                    chunk = remaining[0]
+                chunks.append(chunk)
+                remaining = remaining[len(chunk):]
+            return chunks
+
+        lines = []
+        current = ""
+
+        for word in text.split():
+            if font.measure(word) > max_width:
+                if current:
+                    lines.append(current)
+                    current = ""
+
+                chunks = split_long_word(word)
+                for chunk in chunks:
+                    if len(lines) >= max_lines:
+                        break
+                    lines.append(chunk)
+                if len(lines) >= max_lines:
+                    break
+                continue
+
+            candidate = word if not current else f"{current} {word}"
+            if font.measure(candidate) <= max_width:
+                current = candidate
+                continue
+
+            if current:
+                lines.append(current)
+            current = word
+
+            if len(lines) >= max_lines:
+                break
+
+        if len(lines) < max_lines and current:
+            lines.append(current)
+
+        if len(lines) < max_lines:
+            return "\n".join(lines)
+
+        # If content still remains beyond the third line, make the third line
+        # visibly indicate truncation without exceeding the text area.
+        consumed = " ".join(lines)
+        if len(consumed) < len(text):
+            last = lines[-1].rstrip()
+            while last and font.measure(last + "…") > max_width:
+                last = last[:-1]
+            lines[-1] = (last + "…") if last else "…"
+
+        return "\n".join(lines[:max_lines])
 
     def __init__(
         self,
@@ -268,9 +339,6 @@ class StyledMessageDialog(tk.Toplevel):
             except (OSError, ValueError, tk.TclError):
                 self._message_icon = None
 
-        # IMPORTANT: the dialog layout is deliberately fixed.  Nothing inside
-        # it is allowed to participate in geometry negotiation.  This prevents
-        # a long path from moving the icon, text, or OK button.
         outer = tk.Frame(self, bg=BG_COLOR, bd=0, highlightthickness=0)
         outer.place(x=18, y=5, width=self.WIDTH - 36, height=self.HEIGHT - 10)
 
@@ -282,8 +350,6 @@ class StyledMessageDialog(tk.Toplevel):
                 bd=0,
                 highlightthickness=0,
             )
-            # This deliberately corresponds to the established
-            # pady=(25, 0) visual position of the warning/success images.
             icon_label.place(x=0, y=25, width=80, height=80)
         else:
             icon_label = tk.Label(
@@ -297,25 +363,32 @@ class StyledMessageDialog(tk.Toplevel):
             )
             icon_label.place(x=0, y=25, width=80, height=50)
 
-        # The message area is explicitly bounded to the space to the right of
-        # the icon.  In particular, do not use relwidth=1.0 here: that would
-        # make the label extend past the right edge of the dialog.
+        message_font = tkfont.Font(family=family, size=12)
+        display_message = self._fit_message_to_three_lines(
+            message,
+            message_font,
+            max_width=304,
+            max_lines=3,
+        )
+
         message_label = tk.Label(
             outer,
-            text=message,
+            text=display_message,
             bg=BG_COLOR,
             fg=TEXT_COLOR,
-            font=(family, 12),
+            font=message_font,
             justify="center",
             anchor="center",
-            wraplength=300,
+            wraplength=304,
             bd=0,
             highlightthickness=0,
         )
-        message_label.place(x=92, y=18, width=304, height=72)
+        message_label.place(x=92, y=10, width=304, height=90)
 
         image_manager = getattr(parent, "images", None)
-        ok_text = getattr(getattr(parent, "i18n", None), "t", lambda key: "OK")("button.ok")
+        ok_text = getattr(
+            getattr(parent, "i18n", None), "t", lambda key: "OK"
+        )("button.ok")
         has_action = action_command is not None and bool(action_label)
 
         if image_manager is not None:
@@ -330,7 +403,7 @@ class StyledMessageDialog(tk.Toplevel):
                     asset_filename="boton1.png",
                     takefocus=False,
                 )
-                action.place(x=113, y=95, width=140, height=48)
+                action.place(x=113, y=112, width=140, height=48)
 
             ok = AssetButton(
                 outer,
@@ -355,7 +428,7 @@ class StyledMessageDialog(tk.Toplevel):
                     highlightthickness=0,
                     takefocus=False,
                 )
-                action.place(x=113, y=95, width=140, height=48)
+                action.place(x=113, y=112, width=140, height=48)
 
             ok = tk.Button(
                 outer,
@@ -370,15 +443,12 @@ class StyledMessageDialog(tk.Toplevel):
                 takefocus=False,
             )
 
-        # Fixed position: the button cannot be pushed down by message text.
-        ok.place(x=263, y=95, width=140, height=48)
+        ok.place(x=263, y=112, width=140, height=48)
 
         self.bind("<Escape>", lambda _e: self.destroy())
         self.bind("<Return>", lambda _e: self.destroy())
         self.protocol("WM_DELETE_WINDOW", self.destroy)
 
-        # Fixed native client size.  The content above is positioned inside
-        # this rectangle and therefore cannot enlarge or rearrange the window.
         self.geometry(f"{self.WIDTH}x{self.HEIGHT}")
         self.minsize(self.WIDTH, self.HEIGHT)
         self.maxsize(self.WIDTH, self.HEIGHT)
@@ -391,15 +461,20 @@ class StyledMessageDialog(tk.Toplevel):
         self.wait_window()
 
     def _center(self):
+        """Center the dialog on the physical screen."""
         self.update_idletasks()
-        parent = self.parent
         try:
-            px = parent.winfo_rootx() + (parent.winfo_width() - self.WIDTH) // 2
-            py = parent.winfo_rooty() + (parent.winfo_height() - self.HEIGHT) // 2
+            screen_width = self.winfo_screenwidth()
+            screen_height = self.winfo_screenheight()
+            px = (screen_width - self.WIDTH) // 2
+            py = (screen_height - self.HEIGHT) // 2
+            self.geometry(
+                f"{self.WIDTH}x{self.HEIGHT}"
+                f"+{max(0, px)}+{max(0, py)}"
+            )
         except tk.TclError:
-            px = (self.winfo_screenwidth() - self.WIDTH) // 2
-            py = (self.winfo_screenheight() - self.HEIGHT) // 2
-        self.geometry(f"{self.WIDTH}x{self.HEIGHT}+{max(0, px)}+{max(0, py)}")
+            self.geometry(f"{self.WIDTH}x{self.HEIGHT}")
+
 
 def show_message_dialog(
     parent,
